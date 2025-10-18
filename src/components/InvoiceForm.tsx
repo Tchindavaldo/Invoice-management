@@ -1,0 +1,583 @@
+import { useState, useRef } from 'react';
+import { InvoiceFormData, InvoiceItem } from '../types';
+import { Plus, Trash2, Upload, X, Loader2 } from 'lucide-react';
+import logoImage from '../images/logo.jpg';
+import { uploadImage, isSupabaseStorageUrl, deleteImage } from '../services/imageService';
+
+interface InvoiceFormProps {
+  initialData?: Partial<InvoiceFormData>;
+  onSubmit: (data: InvoiceFormData) => void;
+  onCancel: () => void;
+  isEditing?: boolean;
+}
+
+export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing = false }: InvoiceFormProps) {
+  const [formData, setFormData] = useState<InvoiceFormData>({
+    invoiceNumber: initialData?.invoiceNumber || '',
+    date: initialData?.date || new Date().toISOString().split('T')[0],
+    dueDate: initialData?.dueDate || '',
+    
+    companyName: initialData?.companyName || 'AliExpress',
+    companyNameChinese: initialData?.companyNameChinese || '阿里速运通',
+    companyAddress: initialData?.companyAddress || '699 Wang Shang Lu, Bin Jiang Qu, Hang Zhou Shi, Zhe Jiang Sheng, Chine, 310052',
+    companyAddress2: initialData?.companyAddress2 || '699 Wang Shang Lu, Bin Jiang Qu, Hang Zhou Shi, Zhe Jiang Sheng, Chine, 310052',
+    companyPhone: initialData?.companyPhone || '+852 5912 3024',
+    companyEmail: initialData?.companyEmail || 'alibaba36@gmail.com',
+    companyLicense: initialData?.companyLicense || '6839LDBD6',
+    companyLogo: initialData?.companyLogo || logoImage,
+    
+    clientName: initialData?.clientName || '',
+    clientLocation: initialData?.clientLocation || '',
+    clientPhone: initialData?.clientPhone || '',
+    clientEmail: initialData?.clientEmail || '',
+    
+    items: initialData?.items || [],
+    
+    taxRate: initialData?.taxRate || 19.25,
+    notes: initialData?.notes || 'Merci pour votre confiance. Pour toute question concernant cette facture, veuillez nous contacter.',
+    terms: initialData?.terms || 'Paiement dû à réception de la facture. Les paiements en retard peuvent entraîner des frais supplémentaires. Nous acceptons les virements bancaires, les chèques et les paiements en ligne.',
+  });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const handleInputChange = (field: keyof InvoiceFormData, value: string | number) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Veuillez sélectionner une image');
+      return;
+    }
+
+    setUploadingLogo(true);
+    try {
+      // Upload vers Supabase Storage
+      const publicUrl = await uploadImage(file);
+      
+      // Supprimer l'ancienne image si c'est une image Supabase Storage
+      if (formData.companyLogo && isSupabaseStorageUrl(formData.companyLogo)) {
+        await deleteImage(formData.companyLogo);
+      }
+      
+      // Mettre à jour le formulaire avec la nouvelle URL
+      setFormData({ ...formData, companyLogo: publicUrl });
+    } catch (error) {
+      console.error('Error uploading logo:', error);
+      alert('Erreur lors de l\'upload du logo. Veuillez réessayer.');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
+
+  const addItem = () => {
+    const newItem: InvoiceItem = {
+      id: Date.now().toString(),
+      description: '',
+      quantity: 1,
+      price: 0,
+      amount: 0,
+    };
+    setFormData({ ...formData, items: [...formData.items, newItem] });
+  };
+
+  const removeItem = (id: string) => {
+    setFormData({
+      ...formData,
+      items: formData.items.filter(item => item.id !== id),
+    });
+  };
+
+  const updateItem = (id: string, field: keyof InvoiceItem, value: string | number) => {
+    const updatedItems = formData.items.map(item => {
+      if (item.id === id) {
+        const updatedItem = { ...item, [field]: value };
+        if (field === 'quantity' || field === 'price') {
+          updatedItem.amount = Number(updatedItem.quantity) * Number(updatedItem.price);
+        }
+        return updatedItem;
+      }
+      return item;
+    });
+    setFormData({ ...formData, items: updatedItems });
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validation
+    if (!formData.invoiceNumber || !formData.date || !formData.dueDate) {
+      alert('Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+    
+    if (!formData.companyName || !formData.clientName) {
+      alert('Veuillez renseigner le nom de l\'entreprise et du client');
+      return;
+    }
+    
+    if (formData.items.length === 0) {
+      alert('Veuillez ajouter au moins un article');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg max-w-6xl mx-auto">
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {isEditing ? 'Modifier la facture' : 'Nouvelle facture'}
+        </h2>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="text-gray-400 hover:text-gray-600"
+        >
+          <X className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Invoice Basic Info */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations de base</h3>
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              N° Facture *
+            </label>
+            <input
+              type="text"
+              value={formData.invoiceNumber}
+              onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date *
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
+                className="w-full px-2 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 text-sm sm:text-base"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Échéance *
+              </label>
+              <input
+                type="date"
+                value={formData.dueDate}
+                onChange={(e) => handleInputChange('dueDate', e.target.value)}
+                className="w-full px-2 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 text-sm sm:text-base"
+                required
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Company Information */}
+      <div className="mb-8 pb-6 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations de l'entreprise (Header de la facture)</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Ces informations apparaîtront dans l'en-tête de votre facture. Les valeurs par défaut sont pré-remplies, mais vous pouvez toutes les modifier selon vos besoins.
+        </p>
+        
+        {/* Logo Upload */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Logo de l'entreprise
+          </label>
+          <div className="flex items-center gap-4">
+            {formData.companyLogo && (
+              <img 
+                src={formData.companyLogo} 
+                alt="Logo" 
+                className="h-16 w-16 object-contain border border-gray-200 rounded"
+              />
+            )}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploadingLogo}
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-300 text-gray-700 rounded-lg transition-colors text-sm"
+            >
+              <Upload className="w-5 h-5" />
+              <span className="hidden sm:inline">{uploadingLogo ? 'Upload en cours...' : (formData.companyLogo ? 'Changer le logo' : 'Ajouter un logo')}</span>
+              <span className="sm:hidden">{uploadingLogo ? 'Upload...' : 'Logo'}</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLogoUpload}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nom de l'entreprise *
+            </label>
+            <input
+              type="text"
+              value={formData.companyName}
+              onChange={(e) => handleInputChange('companyName', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nom en chinois (optionnel)
+            </label>
+            <input
+              type="text"
+              value={formData.companyNameChinese}
+              onChange={(e) => handleInputChange('companyNameChinese', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Adresse ligne 1 *
+            </label>
+            <input
+              type="text"
+              value={formData.companyAddress}
+              onChange={(e) => handleInputChange('companyAddress', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Adresse ligne 2 (optionnel)
+            </label>
+            <input
+              type="text"
+              value={formData.companyAddress2}
+              onChange={(e) => handleInputChange('companyAddress2', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Téléphone *
+            </label>
+            <input
+              type="tel"
+              value={formData.companyPhone}
+              onChange={(e) => handleInputChange('companyPhone', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email *
+            </label>
+            <input
+              type="email"
+              value={formData.companyEmail}
+              onChange={(e) => handleInputChange('companyEmail', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              required
+            />
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Licence (optionnel)
+            </label>
+            <input
+              type="text"
+              value={formData.companyLicense}
+              onChange={(e) => handleInputChange('companyLicense', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Client Information */}
+      <div className="mb-8 pb-6 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations du client</h3>
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Nom du client *
+            </label>
+            <input
+              type="text"
+              value={formData.clientName}
+              onChange={(e) => handleInputChange('clientName', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Localisation
+            </label>
+            <input
+              type="text"
+              value={formData.clientLocation}
+              onChange={(e) => handleInputChange('clientLocation', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Téléphone
+            </label>
+            <input
+              type="tel"
+              value={formData.clientPhone}
+              onChange={(e) => handleInputChange('clientPhone', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={formData.clientEmail}
+              onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Items */}
+      <div className="mb-8 pb-6 border-b border-gray-200">
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">Articles / Lignes de la facture</h3>
+            <p className="text-sm text-gray-600">Ajoutez autant de lignes que nécessaire pour vos produits ou services</p>
+          </div>
+          <button
+            type="button"
+            onClick={addItem}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+          >
+            <Plus className="w-5 h-5" />
+            <span className="hidden sm:inline">Ajouter une ligne</span>
+          </button>
+        </div>
+
+        {formData.items.length === 0 && (
+          <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <p className="text-gray-500">Aucun article ajouté. Cliquez sur "Ajouter une ligne" pour commencer.</p>
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {formData.items.map((item) => (
+            <div key={item.id} className="bg-gray-50 p-4 rounded-lg space-y-3">
+              {/* Desktop view - flex */}
+              <div className="hidden sm:flex gap-4 items-start">
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={item.description}
+                    onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                    placeholder="Description de l'article"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  />
+                </div>
+                <div className="w-24">
+                  <input
+                    type="number"
+                    value={item.quantity}
+                    onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
+                    placeholder="Qté"
+                    min="1"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  />
+                </div>
+                <div className="w-32">
+                  <input
+                    type="number"
+                    value={item.price}
+                    onChange={(e) => updateItem(item.id, 'price', Number(e.target.value))}
+                    placeholder="Prix"
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  />
+                </div>
+                <div className="w-32">
+                  <input
+                    type="text"
+                    value={item.amount.toFixed(2)}
+                    readOnly
+                    placeholder="Montant"
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.id)}
+                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Supprimer cette ligne"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Mobile view - stacked with labels */}
+              <div className="sm:hidden space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Description *</label>
+                  <input
+                    type="text"
+                    value={item.description}
+                    onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                    placeholder="Nom de l'article"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Qté</label>
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
+                      min="1"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Prix</label>
+                    <input
+                      type="number"
+                      value={item.price}
+                      onChange={(e) => updateItem(item.id, 'price', Number(e.target.value))}
+                      min="0"
+                      step="0.01"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Total</label>
+                    <input
+                      type="text"
+                      value={item.amount.toFixed(2)}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeItem(item.id)}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  <span className="text-sm">Supprimer</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Additional Information */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations complémentaires</h3>
+        <div className="grid grid-cols-1 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Taux de TVA (%)
+            </label>
+            <input
+              type="number"
+              value={formData.taxRate}
+              onChange={(e) => handleInputChange('taxRate', Number(e.target.value))}
+              min="0"
+              max="100"
+              step="0.1"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+            />
+            <p className="text-xs text-gray-500 mt-1">Laissez à 0 si pas de TVA applicable</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Notes
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => handleInputChange('notes', e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              placeholder="Ajouter des notes ou remerciements..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Message de remerciement ou informations supplémentaires pour votre client
+            </p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Conditions de paiement
+            </label>
+            <textarea
+              value={formData.terms}
+              onChange={(e) => handleInputChange('terms', e.target.value)}
+              rows={3}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              placeholder="Conditions de paiement..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Modalités de paiement : délais, pénalités de retard, modes de paiement acceptés, etc.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <span className="hidden sm:inline">Annuler</span>
+          <span className="sm:hidden">Annuler</span>
+        </button>
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white rounded-lg transition-colors"
+        >
+          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+          <span className="hidden sm:inline">{saving ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Créer la facture')}</span>
+          <span className="sm:hidden">{saving ? 'Envoi...' : (isEditing ? 'Modifier' : 'Créer')}</span>
+        </button>
+      </div>
+    </form>
+  );
+}
