@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS invoices (
   -- Informations complémentaires
   notes TEXT,
   terms TEXT,
+  signature VARCHAR(255),
   
   -- Metadata
   created_at TIMESTAMPTZ DEFAULT NOW(),

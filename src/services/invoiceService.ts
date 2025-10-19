@@ -34,9 +34,8 @@ export const createInvoice = async (invoice: Omit<Invoice, 'id'>): Promise<strin
       tax_rate: invoice.taxRate,
       total: invoice.total,
       currency: invoice.currency,
-      
-      notes: invoice.notes,
-      terms: invoice.terms,
+      signature: invoice.signature,
+      show_signature: invoice.showSignature,
       
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -94,9 +93,8 @@ export const getAllInvoices = async (): Promise<Invoice[]> => {
       taxRate: item.tax_rate,
       total: item.total,
       currency: item.currency,
-      
-      notes: item.notes,
-      terms: item.terms,
+      signature: item.signature,
+      showSignature: item.show_signature,
       
       createdAt: item.created_at,
       updatedAt: item.updated_at,
@@ -147,9 +145,8 @@ export const getInvoiceById = async (id: string): Promise<Invoice | null> => {
         taxRate: data.tax_rate,
         total: data.total,
         currency: data.currency,
-        
-        notes: data.notes,
-        terms: data.terms,
+        signature: data.signature,
+        showSignature: data.show_signature,
         
         createdAt: data.created_at,
         updatedAt: data.updated_at,
@@ -197,8 +194,8 @@ export const updateInvoice = async (id: string, invoice: Partial<Invoice>): Prom
     if (invoice.total !== undefined) dbUpdate.total = invoice.total;
     if (invoice.currency !== undefined) dbUpdate.currency = invoice.currency;
     
-    if (invoice.notes !== undefined) dbUpdate.notes = invoice.notes;
-    if (invoice.terms !== undefined) dbUpdate.terms = invoice.terms;
+    if (invoice.signature !== undefined) dbUpdate.signature = invoice.signature;
+    if (invoice.showSignature !== undefined) dbUpdate.show_signature = invoice.showSignature;
 
     const { error } = await supabase
       .from(TABLE_NAME)

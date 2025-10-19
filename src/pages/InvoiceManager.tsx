@@ -87,8 +87,8 @@ export default function InvoiceManager() {
         taxRate: formData.taxRate,
         total,
         currency: formData.currency,
-        notes: formData.notes,
-        terms: formData.terms,
+        signature: formData.signature,
+        showSignature: formData.showSignature,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -135,9 +135,8 @@ export default function InvoiceManager() {
         taxRate: formData.taxRate,
         total,
         currency: formData.currency,
-        
-        notes: formData.notes,
-        terms: formData.terms,
+        signature: formData.signature,
+        showSignature: formData.showSignature,
       };
 
       await updateInvoiceDB(editingInvoice.id, updatedData);
@@ -233,7 +232,8 @@ export default function InvoiceManager() {
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      while (heightLeft >= 0) {
+      // Only add new page if significant content remains (more than 10mm)
+      while (heightLeft >= 10) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
@@ -303,8 +303,8 @@ export default function InvoiceManager() {
               items: editingInvoice.items,
               taxRate: editingInvoice.taxRate || 0,
               currency: editingInvoice.currency || 'EUR',
-              notes: editingInvoice.notes || '',
-              terms: editingInvoice.terms || '',
+              signature: editingInvoice.signature || '',
+              showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
             } : undefined}
             onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
             onCancel={handleCancelForm}

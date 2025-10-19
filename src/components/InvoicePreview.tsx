@@ -133,7 +133,7 @@ export default function InvoicePreview({ invoice }: InvoicePreviewProps) {
         {/* Totals */}
         <div className="mt-4 flex justify-end">
           <div className="w-64">
-            {invoice.tax && invoice.tax > 0 && (
+            {invoice.taxRate > 0 && invoice.tax > 0 && (
               <>
                 <div className="flex justify-between py-2 border-b border-gray-200">
                   <span className="text-gray-700">Sous-total:</span>
@@ -153,28 +153,112 @@ export default function InvoicePreview({ invoice }: InvoicePreviewProps) {
         </div>
       </div>
 
-      {/* Notes and Terms */}
-      {(invoice.notes || invoice.terms) && (
-        <div className="mt-8 pt-6 border-t border-gray-200">
-          {invoice.notes && (
-            <div className="mb-4">
-              <h4 className="font-bold text-gray-900 mb-2">Notes:</h4>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{invoice.notes}</p>
-            </div>
-          )}
-          {invoice.terms && (
-            <div>
-              <h4 className="font-bold text-gray-900 mb-2">Conditions:</h4>
-              <p className="text-sm text-gray-600 whitespace-pre-line">{invoice.terms}</p>
+      {/* Signature Section - Always visible */}
+      <div className="mt-8 flex justify-end">
+        <div className="w-64">
+          <div className="mb-2">
+            <p className="text-sm text-gray-700 mb-1">Signature :</p>
+            {/* Ultimate Professional CEO Signature - Only shown if showSignature is true */}
+            {invoice.showSignature ? (
+              <div className="flex justify-center py-3">
+                <svg width="220" height="90" viewBox="0 0 220 90" xmlns="http://www.w3.org/2000/svg">
+                {/* Dramatic first initial - bold and confident */}
+                <path 
+                  d="M 15 50 Q 18 20, 35 18 Q 48 17, 55 28 Q 58 35, 52 45 Q 48 52, 40 58 Q 32 62, 25 60 Q 18 58, 15 52" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="3.2" 
+                  fill="none" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Bold crossing stroke */}
+                <path 
+                  d="M 25 25 L 48 55" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="2.8" 
+                  fill="none" 
+                  strokeLinecap="round"
+                />
+                {/* Flowing connection with character */}
+                <path 
+                  d="M 48 55 Q 58 50, 68 55 Q 72 58, 70 62" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="2.5" 
+                  fill="none" 
+                  strokeLinecap="round"
+                />
+                {/* Middle signature - dynamic curves */}
+                <path 
+                  d="M 70 62 Q 80 52, 90 58 Q 95 62, 98 58 Q 105 50, 112 56 Q 118 62, 122 58 Q 128 52, 135 57" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="2.6" 
+                  fill="none" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Ascending flourish */}
+                <path 
+                  d="M 135 57 Q 142 48, 150 52 Q 158 56, 165 50 Q 172 44, 180 48" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="2.4" 
+                  fill="none" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Final dramatic paraphe (executive flourish) */}
+                <path 
+                  d="M 180 48 Q 188 42, 195 46 L 202 48 Q 205 50, 208 45" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="2.2" 
+                  fill="none" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {/* Elegant loop at the end */}
+                <path 
+                  d="M 208 45 Q 210 38, 205 35 Q 200 33, 198 38" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="1.8" 
+                  fill="none" 
+                  strokeLinecap="round"
+                />
+                {/* Sophisticated underline with wave */}
+                <path 
+                  d="M 20 70 Q 50 75, 80 68 Q 110 62, 140 68 Q 170 74, 200 68" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="1.6" 
+                  fill="none" 
+                  strokeLinecap="round"
+                />
+                {/* Secondary flourish under the paraphe */}
+                <path 
+                  d="M 175 72 Q 190 76, 205 72" 
+                  stroke="#0a0a0a" 
+                  strokeWidth="1.2" 
+                  fill="none" 
+                  strokeLinecap="round"
+                />
+                {/* Executive dots - mark of authenticity */}
+                <circle cx="212" cy="48" r="1.8" fill="#0a0a0a" />
+                <circle cx="35" cy="30" r="1.5" fill="#0a0a0a" />
+              </svg>
+              </div>
+            ) : (
+              // Empty space for manual signature when graphic is hidden
+              <div className="py-12"></div>
+            )}
+            {/* Signature line - always visible */}
+            <div className="border-b-2 border-gray-900"></div>
+          </div>
+          {invoice.signature && invoice.signature.trim() !== '' && (
+            <div className="text-center mt-2">
+              <p className="text-sm font-semibold text-gray-900">{invoice.signature}</p>
+              <p className="text-xs text-gray-600">({formatDate(invoice.date)})</p>
             </div>
           )}
         </div>
-      )}
-
-      {/* Footer */}
-      <div className="mt-12 text-center text-sm text-gray-500">
-        <p>Facture professionnelle</p>
       </div>
+
     </div>
   );
 }

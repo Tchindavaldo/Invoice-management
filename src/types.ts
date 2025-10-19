@@ -39,8 +39,8 @@ export interface Invoice {
   currency: string;
   
   // Additional fields
-  notes?: string;
-  terms?: string;
+  signature?: string;
+  showSignature?: boolean;
   
   // Metadata
   createdAt?: string;
@@ -70,6 +70,6 @@ export interface InvoiceFormData {
   
   taxRate: number;
   currency: string;
-  notes: string;
-  terms: string;
+  signature: string;
+  showSignature: boolean;
 }

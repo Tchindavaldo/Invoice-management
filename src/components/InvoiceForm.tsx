@@ -35,8 +35,8 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
     
     taxRate: initialData?.taxRate || 1,
     currency: initialData?.currency || 'EUR',
-    notes: initialData?.notes || 'Merci pour votre confiance. Pour toute question concernant cette facture, veuillez nous contacter.',
-    terms: initialData?.terms || 'Paiement dû à réception de la facture. Les paiements en retard peuvent entraîner des frais supplémentaires. Nous acceptons les virements bancaires, les chèques et les paiements en ligne.',
+    signature: initialData?.signature || '',
+    showSignature: initialData?.showSignature !== undefined ? initialData.showSignature : true,
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,7 +44,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
 
-  const handleInputChange = (field: keyof InvoiceFormData, value: string | number) => {
+  const handleInputChange = (field: keyof InvoiceFormData, value: string | number | boolean) => {
     setFormData({ ...formData, [field]: value });
     // Effacer l'erreur pour ce champ quand l'utilisateur commence à taper
     if (errors[field]) {
@@ -678,32 +678,36 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Notes
+              Afficher la signature graphique
             </label>
-            <textarea
-              value={formData.notes}
-              onChange={(e) => handleInputChange('notes', e.target.value)}
-              rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-              placeholder="Ajouter des notes ou remerciements..."
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              Message de remerciement ou informations supplémentaires pour votre client
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={formData.showSignature}
+                onChange={(e) => handleInputChange('showSignature', e.target.checked)}
+                className="w-5 h-5 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+              />
+              <span className="text-sm text-gray-700">
+                Afficher la signature dessinée par défaut sur la facture
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Décochez pour masquer la signature graphique et laisser uniquement une ligne vide
             </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Conditions de paiement
+              Nom du signataire
             </label>
-            <textarea
-              value={formData.terms}
-              onChange={(e) => handleInputChange('terms', e.target.value)}
-              rows={3}
+            <input
+              type="text"
+              value={formData.signature}
+              onChange={(e) => handleInputChange('signature', e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-              placeholder="Conditions de paiement..."
+              placeholder="Ex: Le Directeur, Jean Dupont..."
             />
             <p className="text-xs text-gray-500 mt-1">
-              Modalités de paiement : délais, pénalités de retard, modes de paiement acceptés, etc.
+              Nom qui apparaîtra sous la ligne de signature (optionnel)
             </p>
           </div>
         </div>
