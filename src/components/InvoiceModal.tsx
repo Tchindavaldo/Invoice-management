@@ -49,7 +49,8 @@ export default function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
       pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
-      while (heightLeft >= 0) {
+      // Only add new page if significant content remains (more than 10mm)
+      while (heightLeft >= 10) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
