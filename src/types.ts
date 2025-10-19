@@ -33,17 +33,18 @@ export interface Invoice {
   
   // Totals
   subtotal: number;
-  tax?: number;
-  taxRate?: number;
+  tax: number;
+  taxRate: number;
   total: number;
+  currency: string;
   
   // Additional fields
   notes?: string;
   terms?: string;
   
   // Metadata
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface InvoiceFormData {
@@ -68,6 +69,7 @@ export interface InvoiceFormData {
   items: InvoiceItem[];
   
   taxRate: number;
+  currency: string;
   notes: string;
   terms: string;
 }

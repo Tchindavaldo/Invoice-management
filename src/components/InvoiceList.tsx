@@ -12,12 +12,36 @@ interface InvoiceListProps {
 }
 
 export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDownload, downloadingId, deletingId }: InvoiceListProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XAF',
-      minimumFractionDigits: 2,
-    }).format(amount);
+  const formatCurrency = (amount: number, currency: string = 'EUR') => {
+    // Mapping des devises vers les symboles
+    const currencySymbols: { [key: string]: string } = {
+      'EUR': '€',
+      'USD': '$',
+      'GBP': '£',
+      'CHF': 'Fr',
+      'CAD': '$',
+      'JPY': '¥',
+      'CNY': '¥',
+      'XAF': 'CFA',
+      'XOF': 'CFA',
+      'MAD': 'DH',
+    };
+
+    // Si c'est une devise standard, utiliser Intl.NumberFormat
+    if (currencySymbols[currency]) {
+      try {
+        return new Intl.NumberFormat('fr-FR', {
+          style: 'currency',
+          currency: currency,
+        }).format(amount);
+      } catch {
+        // Fallback si la devise n'est pas supportée par Intl
+        return `${amount.toFixed(2)} ${currencySymbols[currency]}`;
+      }
+    }
+    
+    // Pour les devises personnalisées
+    return `${amount.toFixed(2)} ${currency}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -48,7 +72,7 @@ export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDown
               <div className="text-base font-semibold text-gray-900 mb-1">{invoice.clientName}</div>
               <div className="flex items-center justify-between text-sm text-gray-600">
                 <span>{formatDate(invoice.date)}</span>
-                <span className="font-bold text-gray-900">{formatCurrency(invoice.total)}</span>
+                <span className="font-bold text-gray-900">{formatCurrency(invoice.total, invoice.currency)}</span>
               </div>
             </div>
             <div className="flex items-center justify-around gap-2 pt-3 border-t border-gray-200">
@@ -145,8 +169,8 @@ export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDown
               <td className="px-6 py-4 whitespace-nowrap">
                 <span className="text-sm text-gray-500">{formatDate(invoice.dueDate)}</span>
               </td>
-              <td className="px-6 py-4 whitespace-nowrap">
-                <span className="text-sm font-semibold text-gray-900">{formatCurrency(invoice.total)}</span>
+              <td className="px-6 py-4 whitespace-nowrap text-right">
+                <span className="text-sm font-semibold text-gray-900">{formatCurrency(invoice.total, invoice.currency)}</span>
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end gap-1 sm:gap-2">

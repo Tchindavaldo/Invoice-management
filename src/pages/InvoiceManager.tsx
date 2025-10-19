@@ -86,10 +86,9 @@ export default function InvoiceManager() {
         tax,
         taxRate: formData.taxRate,
         total,
-        
+        currency: formData.currency,
         notes: formData.notes,
         terms: formData.terms,
-        
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -135,6 +134,7 @@ export default function InvoiceManager() {
         tax,
         taxRate: formData.taxRate,
         total,
+        currency: formData.currency,
         
         notes: formData.notes,
         terms: formData.terms,
@@ -302,6 +302,7 @@ export default function InvoiceManager() {
               clientEmail: editingInvoice.clientEmail || '',
               items: editingInvoice.items,
               taxRate: editingInvoice.taxRate || 0,
+              currency: editingInvoice.currency || 'EUR',
               notes: editingInvoice.notes || '',
               terms: editingInvoice.terms || '',
             } : undefined}

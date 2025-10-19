@@ -100,10 +100,11 @@ CREATE TABLE IF NOT EXISTS invoices (
   items JSONB NOT NULL DEFAULT '[]',
   
   -- Totaux
-  subtotal NUMERIC(12, 2) NOT NULL DEFAULT 0,
-  tax NUMERIC(12, 2) DEFAULT 0,
-  tax_rate NUMERIC(5, 2) DEFAULT 0,
-  total NUMERIC(12, 2) NOT NULL DEFAULT 0,
+  subtotal DECIMAL(10,2) NOT NULL,
+  tax DECIMAL(10,2) NOT NULL DEFAULT 0,
+  tax_rate DECIMAL(5,2) NOT NULL DEFAULT 0,
+  total DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(10) NOT NULL DEFAULT 'EUR',
   
   -- Informations complémentaires
   notes TEXT,
@@ -122,20 +123,24 @@ CREATE INDEX IF NOT EXISTS idx_invoices_client_name ON invoices(client_name);
 -- Enable Row Level Security (RLS)
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
--- Politique pour permettre toutes les opérations (à ajuster selon vos besoins de sécurité)
--- Pour un environnement de développement, vous pouvez désactiver RLS ou créer une politique permissive
--- Pour la production, créez des politiques plus strictes basées sur l'authentification
-
-CREATE POLICY "Enable all operations for all users" ON invoices
-  FOR ALL
-  USING (true)
-  WITH CHECK (true);
+-- Politique de sécurité pour permettre toutes les opérations (si elle n'existe pas déjà)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE schemaname = 'public' 
+        AND tablename = 'invoices' 
+        AND policyname = 'Enable all operations for all users'
+    ) THEN
+        CREATE POLICY "Enable all operations for all users" ON invoices
+        FOR ALL USING (true) WITH CHECK (true);
+    END IF;
+END $$;
 
 -- Note: Pour la production, remplacez la politique ci-dessus par des politiques plus strictes:
 -- CREATE POLICY "Enable read for authenticated users" ON invoices
 --   FOR SELECT
 --   USING (auth.role() = 'authenticated');
---
 -- CREATE POLICY "Enable insert for authenticated users" ON invoices
 --   FOR INSERT
 --   WITH CHECK (auth.role() = 'authenticated');
@@ -157,8 +162,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Trigger pour mettre à jour updated_at automatiquement
-CREATE TRIGGER update_invoices_updated_at 
-BEFORE UPDATE ON invoices 
-FOR EACH ROW 
-EXECUTE FUNCTION update_updated_at_column();
+-- Trigger pour mettre à jour updated_at automatiquement (si il n'existe pas déjà)
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_invoices_updated_at'
+    ) THEN
+        CREATE TRIGGER update_invoices_updated_at 
+        BEFORE UPDATE ON invoices 
+        FOR EACH ROW 
+        EXECUTE FUNCTION update_updated_at_column();
+    END IF;
+END $$;

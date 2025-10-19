@@ -33,6 +33,7 @@ export const createInvoice = async (invoice: Omit<Invoice, 'id'>): Promise<strin
       tax: invoice.tax,
       tax_rate: invoice.taxRate,
       total: invoice.total,
+      currency: invoice.currency,
       
       notes: invoice.notes,
       terms: invoice.terms,
@@ -92,6 +93,7 @@ export const getAllInvoices = async (): Promise<Invoice[]> => {
       tax: item.tax,
       taxRate: item.tax_rate,
       total: item.total,
+      currency: item.currency,
       
       notes: item.notes,
       terms: item.terms,
@@ -144,6 +146,7 @@ export const getInvoiceById = async (id: string): Promise<Invoice | null> => {
         tax: data.tax,
         taxRate: data.tax_rate,
         total: data.total,
+        currency: data.currency,
         
         notes: data.notes,
         terms: data.terms,
@@ -192,6 +195,7 @@ export const updateInvoice = async (id: string, invoice: Partial<Invoice>): Prom
     if (invoice.tax !== undefined) dbUpdate.tax = invoice.tax;
     if (invoice.taxRate !== undefined) dbUpdate.tax_rate = invoice.taxRate;
     if (invoice.total !== undefined) dbUpdate.total = invoice.total;
+    if (invoice.currency !== undefined) dbUpdate.currency = invoice.currency;
     
     if (invoice.notes !== undefined) dbUpdate.notes = invoice.notes;
     if (invoice.terms !== undefined) dbUpdate.terms = invoice.terms;

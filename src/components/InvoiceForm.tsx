@@ -33,7 +33,8 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
     
     items: initialData?.items || [],
     
-    taxRate: initialData?.taxRate || 19.25,
+    taxRate: initialData?.taxRate || 1,
+    currency: initialData?.currency || 'EUR',
     notes: initialData?.notes || 'Merci pour votre confiance. Pour toute question concernant cette facture, veuillez nous contacter.',
     terms: initialData?.terms || 'Paiement dû à réception de la facture. Les paiements en retard peuvent entraîner des frais supplémentaires. Nous acceptons les virements bancaires, les chèques et les paiements en ligne.',
   });
@@ -41,9 +42,63 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | number) => {
     setFormData({ ...formData, [field]: value });
+    // Effacer l'erreur pour ce champ quand l'utilisateur commence à taper
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: '' });
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+
+    // Validation des champs obligatoires
+    if (!formData.invoiceNumber.trim()) {
+      newErrors.invoiceNumber = 'Le numéro de facture est obligatoire';
+    }
+    if (!formData.date) {
+      newErrors.date = 'La date est obligatoire';
+    }
+    if (!formData.dueDate) {
+      newErrors.dueDate = 'La date d\'échéance est obligatoire';
+    }
+    if (!formData.companyName.trim()) {
+      newErrors.companyName = 'Le nom de l\'entreprise est obligatoire';
+    }
+    if (!formData.companyAddress.trim()) {
+      newErrors.companyAddress = 'L\'adresse de l\'entreprise est obligatoire';
+    }
+    if (!formData.companyPhone.trim()) {
+      newErrors.companyPhone = 'Le téléphone de l\'entreprise est obligatoire';
+    }
+    if (!formData.companyEmail.trim()) {
+      newErrors.companyEmail = 'L\'email de l\'entreprise est obligatoire';
+    }
+    if (!formData.clientName.trim()) {
+      newErrors.clientName = 'Le nom du client est obligatoire';
+    }
+    if (formData.items.length === 0) {
+      newErrors.items = 'Veuillez ajouter au moins un article';
+    }
+    
+    // Validation des articles
+    formData.items.forEach((item, index) => {
+      if (!item.description.trim()) {
+        newErrors[`item_${index}_description`] = 'Description obligatoire';
+      }
+      if (item.quantity <= 0) {
+        newErrors[`item_${index}_quantity`] = 'Quantité invalide';
+      }
+      if (item.price <= 0) {
+        newErrors[`item_${index}_price`] = 'Prix invalide';
+      }
+    });
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -110,19 +165,8 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation
-    if (!formData.invoiceNumber || !formData.date || !formData.dueDate) {
-      alert('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-    
-    if (!formData.companyName || !formData.clientName) {
-      alert('Veuillez renseigner le nom de l\'entreprise et du client');
-      return;
-    }
-    
-    if (formData.items.length === 0) {
-      alert('Veuillez ajouter au moins un article');
+    // Validation avec mise en évidence des erreurs
+    if (!validateForm()) {
       return;
     }
 
@@ -161,9 +205,16 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               type="text"
               value={formData.invoiceNumber}
               onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                errors.invoiceNumber 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary-600'
+              }`}
               required
             />
+            {errors.invoiceNumber && (
+              <p className="text-red-500 text-sm mt-1">{errors.invoiceNumber}</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -243,9 +294,16 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               type="text"
               value={formData.companyName}
               onChange={(e) => handleInputChange('companyName', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                errors.companyName 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary-600'
+              }`}
               required
             />
+            {errors.companyName && (
+              <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -260,15 +318,22 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Adresse ligne 1 *
+              Adresse de l'entreprise *
             </label>
             <input
               type="text"
               value={formData.companyAddress}
               onChange={(e) => handleInputChange('companyAddress', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                errors.companyAddress 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary-600'
+              }`}
               required
             />
+            {errors.companyAddress && (
+              <p className="text-red-500 text-sm mt-1">{errors.companyAddress}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -289,9 +354,16 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               type="tel"
               value={formData.companyPhone}
               onChange={(e) => handleInputChange('companyPhone', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                errors.companyPhone 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary-600'
+              }`}
               required
             />
+            {errors.companyPhone && (
+              <p className="text-red-500 text-sm mt-1">{errors.companyPhone}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -301,9 +373,16 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               type="email"
               value={formData.companyEmail}
               onChange={(e) => handleInputChange('companyEmail', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                errors.companyEmail 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary-600'
+              }`}
               required
             />
+            {errors.companyEmail && (
+              <p className="text-red-500 text-sm mt-1">{errors.companyEmail}</p>
+            )}
           </div>
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -331,9 +410,16 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               type="text"
               value={formData.clientName}
               onChange={(e) => handleInputChange('clientName', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                errors.clientName 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : 'border-gray-300 focus:ring-primary-600'
+              }`}
               required
             />
+            {errors.clientName && (
+              <p className="text-red-500 text-sm mt-1">{errors.clientName}</p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -398,54 +484,76 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
           {formData.items.map((item) => (
             <div key={item.id} className="bg-gray-50 p-4 rounded-lg space-y-3">
               {/* Desktop view - flex */}
-              <div className="hidden sm:flex gap-4 items-start">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={item.description}
-                    onChange={(e) => updateItem(item.id, 'description', e.target.value)}
-                    placeholder="Description de l'article"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-                  />
+              <div className="hidden sm:block">
+                <div className="grid grid-cols-12 gap-2 mb-2 text-xs font-medium text-gray-600">
+                  <div className="col-span-5">Description *</div>
+                  <div className="col-span-2 text-center">Quantité *</div>
+                  <div className="col-span-2 text-center">Prix unitaire *</div>
+                  <div className="col-span-2 text-center">Montant total</div>
+                  <div className="col-span-1"></div>
                 </div>
-                <div className="w-24">
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
-                    placeholder="Qté"
-                    min="1"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-                  />
+                <div className="grid grid-cols-12 gap-2 items-start">
+                  <div className="col-span-5">
+                    <input
+                      type="text"
+                      value={item.description}
+                      onChange={(e) => updateItem(item.id, 'description', e.target.value)}
+                      placeholder="Nom de l'article ou service"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        errors[`item_${formData.items.indexOf(item)}_description`] 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-primary-600'
+                      }`}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
+                      placeholder="1"
+                      min="1"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        errors[`item_${formData.items.indexOf(item)}_quantity`] 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-primary-600'
+                      }`}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <input
+                      type="number"
+                      value={item.price}
+                      onChange={(e) => updateItem(item.id, 'price', Number(e.target.value))}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
+                        errors[`item_${formData.items.indexOf(item)}_price`] 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-primary-600'
+                      }`}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <input
+                      type="text"
+                      value={item.amount.toFixed(2)}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700"
+                    />
+                  </div>
+                  <div className="col-span-1 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => removeItem(item.id)}
+                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Supprimer cette ligne"
+                    >
+                      <Trash2 className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="w-32">
-                  <input
-                    type="number"
-                    value={item.price}
-                    onChange={(e) => updateItem(item.id, 'price', Number(e.target.value))}
-                    placeholder="Prix"
-                    min="0"
-                    step="0.01"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-                  />
-                </div>
-                <div className="w-32">
-                  <input
-                    type="text"
-                    value={item.amount.toFixed(2)}
-                    readOnly
-                    placeholder="Montant"
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-700"
-                  />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeItem(item.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Supprimer cette ligne"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </button>
               </div>
               
               {/* Mobile view - stacked with labels */}
@@ -524,6 +632,49 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
             />
             <p className="text-xs text-gray-500 mt-1">Laissez à 0 si pas de TVA applicable</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Devise
+            </label>
+            <div className="space-y-2">
+              <select
+                value={formData.currency === 'custom' || (formData.currency && !['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'CNY', 'XAF', 'XOF', 'MAD'].includes(formData.currency)) ? 'custom' : formData.currency}
+                onChange={(e) => {
+                  if (e.target.value === 'custom') {
+                    handleInputChange('currency', 'custom');
+                  } else {
+                    handleInputChange('currency', e.target.value);
+                  }
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              >
+                <option value="EUR">EUR (€) - Euro</option>
+                <option value="USD">USD ($) - Dollar américain</option>
+                <option value="GBP">GBP (£) - Livre sterling</option>
+                <option value="CHF">CHF (Fr) - Franc suisse</option>
+                <option value="CAD">CAD ($) - Dollar canadien</option>
+                <option value="JPY">JPY (¥) - Yen japonais</option>
+                <option value="CNY">CNY (¥) - Yuan chinois</option>
+                <option value="XAF">XAF (CFA) - Franc CFA Afrique Centrale</option>
+                <option value="XOF">XOF (CFA) - Franc CFA Afrique Ouest</option>
+                <option value="MAD">MAD (DH) - Dirham marocain</option>
+                <option value="custom">Personnalisée...</option>
+              </select>
+              {(formData.currency === 'custom' || (formData.currency && !['EUR', 'USD', 'GBP', 'CHF', 'CAD', 'JPY', 'CNY', 'XAF', 'XOF', 'MAD'].includes(formData.currency))) && (
+                <input
+                  type="text"
+                  value={formData.currency === 'custom' ? '' : formData.currency}
+                  placeholder="Ex: BTC, USDT, EURO..."
+                  onChange={(e) => handleInputChange('currency', e.target.value || 'custom')}
+                  className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+                  autoFocus
+                />
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Choisissez la devise ou définissez une devise personnalisée
+            </p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

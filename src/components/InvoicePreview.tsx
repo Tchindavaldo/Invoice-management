@@ -6,12 +6,36 @@ interface InvoicePreviewProps {
 }
 
 export default function InvoicePreview({ invoice }: InvoicePreviewProps) {
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'XAF',
-      minimumFractionDigits: 2,
-    }).format(amount);
+  const formatCurrency = (amount: number, currency: string = 'EUR') => {
+    // Mapping des devises vers les symboles
+    const currencySymbols: { [key: string]: string } = {
+      'EUR': '€',
+      'USD': '$',
+      'GBP': '£',
+      'CHF': 'Fr',
+      'CAD': '$',
+      'JPY': '¥',
+      'CNY': '¥',
+      'XAF': 'CFA',
+      'XOF': 'CFA',
+      'MAD': 'DH',
+    };
+
+    // Si c'est une devise standard, utiliser Intl.NumberFormat
+    if (currencySymbols[currency]) {
+      try {
+        return new Intl.NumberFormat('fr-FR', {
+          style: 'currency',
+          currency: currency,
+        }).format(amount);
+      } catch {
+        // Fallback si la devise n'est pas supportée par Intl
+        return `${amount.toFixed(2)} ${currencySymbols[currency]}`;
+      }
+    }
+    
+    // Pour les devises personnalisées
+    return `${amount.toFixed(2)} ${currency}`;
   };
 
   const formatDate = (dateString: string) => {
@@ -99,8 +123,8 @@ export default function InvoicePreview({ invoice }: InvoicePreviewProps) {
               >
                 <td className="px-4 py-3 border-b border-gray-200">{item.description}</td>
                 <td className="px-4 py-3 text-center border-b border-gray-200">{item.quantity}</td>
-                <td className="px-4 py-3 text-right border-b border-gray-200">{formatCurrency(item.price)}</td>
-                <td className="px-4 py-3 text-right border-b border-gray-200">{formatCurrency(item.amount)}</td>
+                <td className="px-4 py-3 text-right border-b border-gray-200">{formatCurrency(item.price, invoice.currency)}</td>
+                <td className="px-4 py-3 text-right border-b border-gray-200">{formatCurrency(item.amount, invoice.currency)}</td>
               </tr>
             ))}
           </tbody>
@@ -113,17 +137,17 @@ export default function InvoicePreview({ invoice }: InvoicePreviewProps) {
               <>
                 <div className="flex justify-between py-2 border-b border-gray-200">
                   <span className="text-gray-700">Sous-total:</span>
-                  <span className="font-semibold">{formatCurrency(invoice.subtotal)}</span>
+                  <span className="font-semibold">{formatCurrency(invoice.subtotal, invoice.currency)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-gray-200">
                   <span className="text-gray-700">TVA ({invoice.taxRate}%):</span>
-                  <span className="font-semibold">{formatCurrency(invoice.tax)}</span>
+                  <span className="font-semibold">{formatCurrency(invoice.tax, invoice.currency)}</span>
                 </div>
               </>
             )}
             <div className="flex justify-between py-3 bg-green-700 text-white px-4 mt-2">
               <span className="text-lg font-bold">TOTAL</span>
-              <span className="text-lg font-bold">{formatCurrency(invoice.total)}</span>
+              <span className="text-lg font-bold">{formatCurrency(invoice.total, invoice.currency)}</span>
             </div>
           </div>
         </div>
