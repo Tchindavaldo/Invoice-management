@@ -33,7 +33,8 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
     
     items: initialData?.items || [],
     
-    taxRate: initialData?.taxRate || 1,
+    taxRate: initialData?.taxRate ?? 0,
+    transportFees: initialData?.transportFees ?? 0,
     currency: initialData?.currency || 'EUR',
     signature: initialData?.signature || '',
     showSignature: initialData?.showSignature !== undefined ? initialData.showSignature : true,
@@ -632,6 +633,21 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
             />
             <p className="text-xs text-gray-500 mt-1">Laissez à 0 si pas de TVA applicable</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Frais de transport
+            </label>
+            <input
+              type="number"
+              value={formData.transportFees}
+              onChange={(e) => handleInputChange('transportFees', Number(e.target.value))}
+              min="0"
+              step="0.01"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              placeholder="0.00"
+            />
+            <p className="text-xs text-gray-500 mt-1">Montant des frais de transport à ajouter au total</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">

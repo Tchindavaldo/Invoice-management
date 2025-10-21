@@ -35,6 +35,7 @@ export interface Invoice {
   subtotal: number;
   tax: number;
   taxRate: number;
+  transportFees: number;
   total: number;
   currency: string;
   
@@ -69,6 +70,7 @@ export interface InvoiceFormData {
   items: InvoiceItem[];
   
   taxRate: number;
+  transportFees: number;
   currency: string;
   signature: string;
   showSignature: boolean;
