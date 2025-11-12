@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Plus, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Plus, FileText, LogOut } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { Invoice, InvoiceFormData } from '../types';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -15,6 +17,7 @@ import InvoiceModal from '../components/InvoiceModal';
 import Toast from '../components/Toast';
 
 export default function InvoiceManager() {
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -25,8 +28,19 @@ export default function InvoiceManager() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
-    loadInvoices();
+    const initializeApp = async () => {
+      await checkAuth();
+      await loadInvoices();
+    };
+    initializeApp();
   }, []);
+
+  const checkAuth = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate('/login');
+    }
+  };
 
   const loadInvoices = async () => {
     setLoading(true);
@@ -269,15 +283,28 @@ export default function InvoiceManager() {
                 <p className="text-sm text-gray-500">Créez et gérez vos factures professionnelles</p>
               </div>
             </div>
-            {!showForm && (
+            <div className="flex items-center gap-3">
+              {!showForm && (
+                <button
+                  onClick={handleNewInvoice}
+                  className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-sm transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span className="hidden sm:inline">Nouvelle facture</span>
+                </button>
+              )}
               <button
-                onClick={handleNewInvoice}
-                className="flex items-center gap-2 px-4 sm:px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg shadow-sm transition-colors"
+                onClick={async () => {
+                  await supabase.auth.signOut();
+                  navigate('/login');
+                }}
+                className="flex items-center gap-2 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg shadow-sm transition-colors"
+                title="Déconnexion"
               >
-                <Plus className="w-5 h-5" />
-                <span className="hidden sm:inline">Nouvelle facture</span>
+                <LogOut className="w-5 h-5" />
+                <span className="hidden sm:inline">Déconnexion</span>
               </button>
-            )}
+            </div>
           </div>
         </div>
       </header>
