@@ -1,6 +1,6 @@
 import { Invoice } from '../types';
 import { FileText } from 'lucide-react';
-import signatureImage from '../images/signature.png';
+import signatureImage from '../images/signature2.png';
 
 interface InvoicePreviewProps {
   invoice: Invoice;
