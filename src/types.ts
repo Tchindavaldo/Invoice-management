@@ -11,7 +11,7 @@ export interface Invoice {
   invoiceNumber: string;
   date: string;
   dueDate: string;
-  
+
   // Company Info (Header)
   companyName: string;
   companyNameChinese?: string;
@@ -21,16 +21,16 @@ export interface Invoice {
   companyEmail: string;
   companyLicense?: string;
   companyLogo?: string;
-  
+
   // Client Info
   clientName: string;
   clientLocation?: string;
   clientPhone?: string;
   clientEmail?: string;
-  
+
   // Invoice Items
   items: InvoiceItem[];
-  
+
   // Totals
   subtotal: number;
   tax: number;
@@ -38,11 +38,12 @@ export interface Invoice {
   transportFees: number;
   total: number;
   currency: string;
-  
+
   // Additional fields
   signature?: string;
   showSignature?: boolean;
-  
+  signatureText?: string;
+
   // Metadata
   createdAt?: string;
   updatedAt?: string;
@@ -52,7 +53,7 @@ export interface InvoiceFormData {
   invoiceNumber: string;
   date: string;
   dueDate: string;
-  
+
   companyName: string;
   companyNameChinese: string;
   companyAddress: string;
@@ -61,17 +62,18 @@ export interface InvoiceFormData {
   companyEmail: string;
   companyLicense: string;
   companyLogo: string;
-  
+
   clientName: string;
   clientLocation: string;
   clientPhone: string;
   clientEmail: string;
-  
+
   items: InvoiceItem[];
-  
+
   taxRate: number;
   transportFees: number;
   currency: string;
   signature: string;
   showSignature: boolean;
+  signatureText: string;
 }

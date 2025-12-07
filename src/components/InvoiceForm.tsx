@@ -38,6 +38,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
     currency: initialData?.currency || 'EUR',
     signature: initialData?.signature || '',
     showSignature: initialData?.showSignature !== undefined ? initialData.showSignature : true,
+    signatureText: initialData?.signatureText || '',
   });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -724,6 +725,21 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
             />
             <p className="text-xs text-gray-500 mt-1">
               Nom qui apparaîtra sous la ligne de signature (optionnel)
+            </p>
+          </div>
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description / Information sous la signature
+            </label>
+            <textarea
+              value={formData.signatureText}
+              onChange={(e) => handleInputChange('signatureText', e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
+              placeholder="Texte additionnel à afficher sous la signature..."
+              rows={3}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Ce texte apparaîtra juste en bas de la signature après le nom et la date
             </p>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, LogOut } from 'lucide-react';
+import { Plus, FileText, LogOut, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Invoice, InvoiceFormData } from '../types';
 import html2canvas from 'html2canvas';
@@ -19,6 +19,9 @@ import Toast from '../components/Toast';
 export default function InvoiceManager() {
   const navigate = useNavigate();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage] = useState(10);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState<Invoice | null>(null);
@@ -30,10 +33,10 @@ export default function InvoiceManager() {
   useEffect(() => {
     const initializeApp = async () => {
       await checkAuth();
-      await loadInvoices();
+      await loadInvoices(currentPage);
     };
     initializeApp();
-  }, []);
+  }, [currentPage]);
 
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -42,11 +45,12 @@ export default function InvoiceManager() {
     }
   };
 
-  const loadInvoices = async () => {
+  const loadInvoices = async (page: number = 1) => {
     setLoading(true);
     try {
-      const loadedInvoices = await getAllInvoices();
-      setInvoices(loadedInvoices);
+      const { data, count } = await getAllInvoices(page, itemsPerPage);
+      setInvoices(data);
+      setTotalItems(count);
     } catch (error) {
       console.error('Error loading invoices:', error);
       setToast({ message: 'Erreur lors du chargement des factures', type: 'error' });
@@ -104,17 +108,19 @@ export default function InvoiceManager() {
         currency: formData.currency,
         signature: formData.signature,
         showSignature: formData.showSignature,
+        signatureText: formData.signatureText,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
 
       await createInvoiceDB(newInvoice);
-      await loadInvoices();
+      await loadInvoices(1); // Reload first page
+      setCurrentPage(1);
       setShowForm(false);
       setToast({ message: 'Facture créée avec succès !', type: 'success' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating invoice:', error);
-      setToast({ message: 'Erreur lors de la création de la facture', type: 'error' });
+      setToast({ message: error.message || 'Erreur lors de la création de la facture', type: 'error' });
     }
   };
 
@@ -153,10 +159,11 @@ export default function InvoiceManager() {
         currency: formData.currency,
         signature: formData.signature,
         showSignature: formData.showSignature,
+        signatureText: formData.signatureText,
       };
 
       await updateInvoiceDB(editingInvoice.id, updatedData);
-      await loadInvoices();
+      await loadInvoices(currentPage);
       setEditingInvoice(null);
       setShowForm(false);
       setToast({ message: 'Facture mise à jour avec succès !', type: 'success' });
@@ -170,7 +177,7 @@ export default function InvoiceManager() {
     setDeletingInvoiceId(id);
     try {
       await deleteInvoiceDB(id);
-      await loadInvoices();
+      await loadInvoices(currentPage);
       setToast({ message: 'Facture supprimée avec succès !', type: 'success' });
     } catch (error) {
       console.error('Error deleting invoice:', error);
@@ -197,6 +204,14 @@ export default function InvoiceManager() {
   const handleNewInvoice = () => {
     setEditingInvoice(null);
     setShowForm(true);
+  };
+
+  const changePage = (newPage: number) => {
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    if (newPage >= 1 && newPage <= totalPages && newPage !== currentPage) {
+      setLoading(true);
+      setCurrentPage(newPage);
+    }
   };
 
   const handleDirectDownload = async (invoice: Invoice) => {
@@ -335,35 +350,121 @@ export default function InvoiceManager() {
               currency: editingInvoice.currency || 'EUR',
               signature: editingInvoice.signature || '',
               showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
+              signatureText: editingInvoice.signatureText || '',
             } : undefined}
             onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
             onCancel={handleCancelForm}
             isEditing={!!editingInvoice}
           />
-        ) : loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Chargement des factures...</p>
-            </div>
-          </div>
         ) : (
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-gray-900 mb-2">Mes factures</h2>
-              <p className="text-sm text-gray-500">
-                {invoices.length} facture{invoices.length !== 1 ? 's' : ''} au total
-              </p>
-            </div>
-            <InvoiceList
-              invoices={invoices}
-              onEdit={handleEditInvoice}
-              onDelete={handleDeleteInvoice}
-              onView={handleViewInvoice}
-              onDownload={handleDirectDownload}
-              downloadingId={downloadingInvoiceId}
-              deletingId={deletingInvoiceId}
-            />
+          <div className="relative min-h-[60vh]">
+            {/* Loading Overlay or Initial Loader */}
+            {loading && (
+              <div className={`fixed inset-0 z-50 flex items-center justify-center ${invoices.length > 0 ? 'bg-black/20 backdrop-blur-sm' : 'bg-gray-50'}`}>
+                <div className="text-center bg-white p-6 rounded-xl shadow-2xl">
+                  <Loader2 className="w-10 h-10 text-primary-600 animate-spin mx-auto mb-3" />
+                  <p className="text-sm font-medium text-gray-600">{invoices.length > 0 ? 'Chargement...' : 'Chargement des factures...'}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Content (always rendered if we have invoices, or if we are not loading) */}
+            {(invoices.length > 0 || !loading) && (
+              <div className="bg-white rounded-lg shadow-sm p-6">
+                <div className="mb-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">Mes factures</h2>
+                  <p className="text-sm text-gray-500">
+                    {totalItems} facture{totalItems !== 1 ? 's' : ''} au total
+                  </p>
+                </div>
+                <InvoiceList
+                  invoices={invoices}
+                  onEdit={handleEditInvoice}
+                  onDelete={handleDeleteInvoice}
+                  onView={handleViewInvoice}
+                  onDownload={handleDirectDownload}
+                  downloadingId={downloadingInvoiceId}
+                  deletingId={deletingInvoiceId}
+                />
+                
+                {/* Pagination Controls */}
+                {totalItems > itemsPerPage && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4 gap-4">
+                    <div className="w-full sm:w-auto flex justify-between sm:justify-start items-center">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">{((currentPage - 1) * itemsPerPage) + 1}</span> à <span className="font-medium">{Math.min(currentPage * itemsPerPage, totalItems)}</span> sur <span className="font-medium">{totalItems}</span>
+                      </p>
+                    </div>
+                    
+                    <div className="w-full sm:w-auto flex justify-center">
+                      <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+                        <button
+                          onClick={() => changePage(currentPage - 1)}
+                          disabled={currentPage === 1 || loading}
+                          className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Précédent</span>
+                          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        
+                        {/* Responsive Page Numbers */}
+                        {Array.from({ length: Math.ceil(totalItems / itemsPerPage) }, (_, i) => i + 1).map((page) => {
+                          const totalPages = Math.ceil(totalItems / itemsPerPage);
+                          // Show fewer pages on mobile
+                          const isMobile = window.innerWidth < 640; 
+                          const range = isMobile ? 0 : 1; // Show current +/- 1 on desktop, only current on mobile (or small range)
+                          
+                          // Logic: First, Last, Current, and neighbors
+                          if (
+                            page === 1 ||
+                            page === totalPages ||
+                            (page >= currentPage - range && page <= currentPage + range)
+                          ) {
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => changePage(page)}
+                                disabled={loading}
+                                className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold ${
+                                  page === currentPage
+                                    ? 'bg-primary-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600'
+                                    : 'text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            );
+                          } else if (
+                            (page === currentPage - range - 1 && page > 1) ||
+                            (page === currentPage + range + 1 && page < totalPages)
+                          ) {
+                            return (
+                              <span key={page} className="relative inline-flex items-center px-2 sm:px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        })}
+
+                        <button
+                          onClick={() => changePage(currentPage + 1)}
+                          disabled={currentPage >= Math.ceil(totalItems / itemsPerPage) || loading}
+                          className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:bg-gray-100 disabled:cursor-not-allowed"
+                        >
+                          <span className="sr-only">Suivant</span>
+                          <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </nav>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </main>
