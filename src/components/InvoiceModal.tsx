@@ -78,7 +78,8 @@ export default function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
             <button
               onClick={handleDownloadPDF}
               disabled={downloadingPDF}
-              className="flex items-center gap-2 px-3 py-2 sm:px-4 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 px-3 py-2 sm:px-4 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white rounded-lg transition-colors"
+              style={{ minWidth: '140px' }}
               title="Télécharger PDF"
             >
               <Download className="w-5 h-5" />

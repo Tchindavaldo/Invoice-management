@@ -12,7 +12,8 @@ import {
   deleteInvoice as deleteInvoiceDB
 } from '../services/invoiceService';
 import InvoiceList from '../components/InvoiceList';
-import InvoiceForm from '../components/InvoiceForm';
+import InvoiceFormStandard from '../components/InvoiceFormStandard';
+import InvoiceFormDHL from '../components/InvoiceFormDHL';
 import InvoiceModal from '../components/InvoiceModal';
 import Toast from '../components/Toast';
 
@@ -28,6 +29,7 @@ export default function InvoiceManager() {
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
+  const [invoiceType, setInvoiceType] = useState<'standard' | 'dhl' | null>(null);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -81,6 +83,7 @@ export default function InvoiceManager() {
       
       const newInvoice = {
         invoiceNumber: formData.invoiceNumber || generateInvoiceNumber(),
+        invoiceType: formData.invoiceType,
         date: formData.date,
         dueDate: formData.dueDate,
         
@@ -132,6 +135,7 @@ export default function InvoiceManager() {
 
       const updatedData = {
         invoiceNumber: formData.invoiceNumber,
+        invoiceType: formData.invoiceType,
         date: formData.date,
         dueDate: formData.dueDate,
         
@@ -189,6 +193,7 @@ export default function InvoiceManager() {
 
   const handleEditInvoice = (invoice: Invoice) => {
     setEditingInvoice(invoice);
+    setInvoiceType(invoice.invoiceType || 'standard');
     setShowForm(true);
   };
 
@@ -199,10 +204,12 @@ export default function InvoiceManager() {
   const handleCancelForm = () => {
     setShowForm(false);
     setEditingInvoice(null);
+    setInvoiceType(null);
   };
 
   const handleNewInvoice = () => {
     setEditingInvoice(null);
+    setInvoiceType(null);
     setShowForm(true);
   };
 
@@ -327,35 +334,114 @@ export default function InvoiceManager() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {showForm ? (
-          <InvoiceForm
-            initialData={editingInvoice ? {
-              invoiceNumber: editingInvoice.invoiceNumber,
-              date: editingInvoice.date,
-              dueDate: editingInvoice.dueDate,
-              companyName: editingInvoice.companyName,
-              companyNameChinese: editingInvoice.companyNameChinese || '',
-              companyAddress: editingInvoice.companyAddress,
-              companyAddress2: editingInvoice.companyAddress2 || '',
-              companyPhone: editingInvoice.companyPhone,
-              companyEmail: editingInvoice.companyEmail,
-              companyLicense: editingInvoice.companyLicense || '',
-              companyLogo: editingInvoice.companyLogo || '',
-              clientName: editingInvoice.clientName,
-              clientLocation: editingInvoice.clientLocation || '',
-              clientPhone: editingInvoice.clientPhone || '',
-              clientEmail: editingInvoice.clientEmail || '',
-              items: editingInvoice.items,
-              taxRate: editingInvoice.taxRate ?? 0,
-              transportFees: editingInvoice.transportFees ?? 0,
-              currency: editingInvoice.currency || 'EUR',
-              signature: editingInvoice.signature || '',
-              showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
-              signatureText: editingInvoice.signatureText || '',
-            } : undefined}
-            onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
-            onCancel={handleCancelForm}
-            isEditing={!!editingInvoice}
-          />
+          !invoiceType ? (
+            <div className="max-w-4xl mx-auto">
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">Choisir le type de facture</h2>
+                <button
+                  onClick={handleCancelForm}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <LogOut className="w-6 h-6 rotate-180" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <button
+                  onClick={() => setInvoiceType('standard')}
+                  className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm hover:shadow-md border-2 border-transparent hover:border-primary-500 transition-all text-center group"
+                >
+                  <div className="w-16 h-16 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary-100 transition-colors">
+                    <FileText className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Facture Standard</h3>
+                  <p className="text-gray-500">
+                    Facture classique pour la vente de produits ou services. Idéal pour la plupart des transactions commerciales.
+                  </p>
+                </button>
+
+                <button
+                  onClick={() => setInvoiceType('dhl')}
+                  className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm hover:shadow-md border-2 border-transparent hover:border-primary-500 transition-all text-center group"
+                >
+                  <div className="w-16 h-16 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-yellow-100 transition-colors">
+                    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">Bordereau DHL</h3>
+                  <p className="text-gray-500">
+                    Bordereau spécifique pour les envois DHL incluant la gestion du poids pour chaque article.
+                  </p>
+                </button>
+              </div>
+            </div>
+          ) : (
+            invoiceType === 'standard' ? (
+              <InvoiceFormStandard
+                initialData={editingInvoice ? {
+                  invoiceType: 'standard',
+                  invoiceNumber: editingInvoice.invoiceNumber,
+                  date: editingInvoice.date,
+                  dueDate: editingInvoice.dueDate,
+                  companyName: editingInvoice.companyName,
+                  companyNameChinese: editingInvoice.companyNameChinese || '',
+                  companyAddress: editingInvoice.companyAddress,
+                  companyAddress2: editingInvoice.companyAddress2 || '',
+                  companyPhone: editingInvoice.companyPhone,
+                  companyEmail: editingInvoice.companyEmail,
+                  companyLicense: editingInvoice.companyLicense || '',
+                  companyLogo: editingInvoice.companyLogo || '',
+                  clientName: editingInvoice.clientName,
+                  clientLocation: editingInvoice.clientLocation || '',
+                  clientPhone: editingInvoice.clientPhone || '',
+                  clientEmail: editingInvoice.clientEmail || '',
+                  items: editingInvoice.items,
+                  taxRate: editingInvoice.taxRate ?? 0,
+                  transportFees: editingInvoice.transportFees ?? 0,
+                  currency: editingInvoice.currency || 'EUR',
+                  signature: editingInvoice.signature || '',
+                  showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
+                  signatureText: editingInvoice.signatureText || '',
+                } : undefined}
+                onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
+                onCancel={handleCancelForm}
+                isEditing={!!editingInvoice}
+              />
+            ) : (
+              <InvoiceFormDHL
+                initialData={editingInvoice ? {
+                  invoiceType: 'dhl',
+                  invoiceNumber: editingInvoice.invoiceNumber,
+                  date: editingInvoice.date,
+                  dueDate: editingInvoice.dueDate,
+                  companyName: editingInvoice.companyName,
+                  companyNameChinese: editingInvoice.companyNameChinese || '',
+                  companyAddress: editingInvoice.companyAddress,
+                  companyAddress2: editingInvoice.companyAddress2 || '',
+                  companyPhone: editingInvoice.companyPhone,
+                  companyEmail: editingInvoice.companyEmail,
+                  companyLicense: editingInvoice.companyLicense || '',
+                  companyLogo: editingInvoice.companyLogo || '',
+                  clientName: editingInvoice.clientName,
+                  clientLocation: editingInvoice.clientLocation || '',
+                  clientPhone: editingInvoice.clientPhone || '',
+                  clientEmail: editingInvoice.clientEmail || '',
+                  items: editingInvoice.items,
+                  taxRate: editingInvoice.taxRate ?? 0,
+                  transportFees: editingInvoice.transportFees ?? 0,
+                  currency: editingInvoice.currency || 'EUR',
+                  signature: editingInvoice.signature || '',
+                  showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
+                  signatureText: editingInvoice.signatureText || '',
+                } : undefined}
+                onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
+                onCancel={handleCancelForm}
+                isEditing={!!editingInvoice}
+              />
+            )
+          )
         ) : (
           <div className="relative min-h-[60vh]">
             {/* Loading Overlay or Initial Loader */}

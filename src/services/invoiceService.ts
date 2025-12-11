@@ -10,6 +10,7 @@ export const createInvoice = async (invoice: Omit<Invoice, 'id'>): Promise<strin
     // Mapper camelCase vers snake_case pour la base de données
     const dbInvoice = {
       invoice_number: invoice.invoiceNumber,
+      invoice_type: invoice.invoiceType,
       date: invoice.date,
       due_date: invoice.dueDate,
 
@@ -83,6 +84,7 @@ export const getAllInvoices = async (page: number = 1, pageSize: number = 10): P
     const invoices = (data || []).map((item: any) => ({
       id: item.id,
       invoiceNumber: item.invoice_number,
+      invoiceType: item.invoice_type,
       date: item.date,
       dueDate: item.due_date,
 
@@ -139,6 +141,7 @@ export const getInvoiceById = async (id: string): Promise<Invoice | null> => {
       return {
         id: data.id,
         invoiceNumber: data.invoice_number,
+        invoiceType: data.invoice_type,
         date: data.date,
         dueDate: data.due_date,
 
@@ -189,6 +192,7 @@ export const updateInvoice = async (id: string, invoice: Partial<Invoice>): Prom
     };
 
     if (invoice.invoiceNumber !== undefined) dbUpdate.invoice_number = invoice.invoiceNumber;
+    if (invoice.invoiceType !== undefined) dbUpdate.invoice_type = invoice.invoiceType;
     if (invoice.date !== undefined) dbUpdate.date = invoice.date;
     if (invoice.dueDate !== undefined) dbUpdate.due_date = invoice.dueDate;
 

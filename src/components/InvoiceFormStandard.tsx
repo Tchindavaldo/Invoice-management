@@ -11,8 +11,9 @@ interface InvoiceFormProps {
   isEditing?: boolean;
 }
 
-export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing = false }: InvoiceFormProps) {
+export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, isEditing = false }: InvoiceFormProps) {
   const [formData, setFormData] = useState<InvoiceFormData>({
+    invoiceType: 'standard',
     invoiceNumber: initialData?.invoiceNumber || '',
     date: initialData?.date || new Date().toISOString().split('T')[0],
     dueDate: initialData?.dueDate || '',
@@ -48,7 +49,6 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | number | boolean) => {
     setFormData({ ...formData, [field]: value });
-    // Effacer l'erreur pour ce champ quand l'utilisateur commence à taper
     if (errors[field]) {
       setErrors({ ...errors, [field]: '' });
     }
@@ -57,7 +57,6 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
 
-    // Validation des champs obligatoires
     if (!formData.invoiceNumber.trim()) {
       newErrors.invoiceNumber = 'Le numéro de facture est obligatoire';
     }
@@ -86,7 +85,6 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
       newErrors.items = 'Veuillez ajouter au moins un article';
     }
     
-    // Validation des articles
     formData.items.forEach((item, index) => {
       if (!item.description.trim()) {
         newErrors[`item_${index}_description`] = 'Description obligatoire';
@@ -114,15 +112,12 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
 
     setUploadingLogo(true);
     try {
-      // Upload vers Supabase Storage
       const publicUrl = await uploadImage(file);
       
-      // Supprimer l'ancienne image si c'est une image Supabase Storage
       if (formData.companyLogo && isSupabaseStorageUrl(formData.companyLogo)) {
         await deleteImage(formData.companyLogo);
       }
       
-      // Mettre à jour le formulaire avec la nouvelle URL
       setFormData({ ...formData, companyLogo: publicUrl });
     } catch (error) {
       console.error('Error uploading logo:', error);
@@ -139,6 +134,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
       quantity: 1,
       price: 0,
       amount: 0,
+      weight: '',
     };
     setFormData({ ...formData, items: [...formData.items, newItem] });
   };
@@ -167,7 +163,6 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validation avec mise en évidence des erreurs
     if (!validateForm()) {
       return;
     }
@@ -184,7 +179,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
     <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-lg max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
         <h2 className="text-2xl font-bold text-gray-900">
-          {isEditing ? 'Modifier la facture' : 'Nouvelle facture'}
+          {isEditing ? 'Modifier la facture Standard' : 'Nouvelle facture Standard'}
         </h2>
         <button
           type="button"
@@ -570,6 +565,7 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
                   />
                 </div>
+
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-600 mb-1">Qté</label>
@@ -758,11 +754,11 @@ export default function InvoiceForm({ initialData, onSubmit, onCancel, isEditing
         <button
           type="submit"
           disabled={saving}
-          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white rounded-lg transition-colors"
+          className="flex items-center gap-2 px-4 sm:px-6 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-primary-400 text-white rounded-lg transition-colors"
         >
-          {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+          {saving && <Loader2 className="w-5 h-5 animate-spin" />}
           <span className="hidden sm:inline">{saving ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Créer la facture')}</span>
-          <span className="sm:hidden">{saving ? 'Envoi...' : (isEditing ? 'Modifier' : 'Créer')}</span>
+          <span className="sm:hidden">{saving ? '...' : 'Enregistrer'}</span>
         </button>
       </div>
     </form>

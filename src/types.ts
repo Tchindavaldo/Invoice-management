@@ -4,10 +4,14 @@ export interface InvoiceItem {
   quantity: number;
   price: number;
   amount: number;
+  weight?: string;
 }
+
+export type InvoiceType = 'standard' | 'dhl';
 
 export interface Invoice {
   id: string;
+  invoiceType: InvoiceType;
   invoiceNumber: string;
   date: string;
   dueDate: string;
@@ -50,6 +54,7 @@ export interface Invoice {
 }
 
 export interface InvoiceFormData {
+  invoiceType: InvoiceType;
   invoiceNumber: string;
   date: string;
   dueDate: string;
