@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, LogOut, Loader2 } from 'lucide-react';
+import { Plus, FileText, LogOut, Loader2, ArrowLeft, Package } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Invoice, InvoiceFormData } from '../types';
 import html2canvas from 'html2canvas';
@@ -30,6 +30,7 @@ export default function InvoiceManager() {
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
   const [invoiceType, setInvoiceType] = useState<'standard' | 'dhl' | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'standard' | 'dhl'>('all');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -335,48 +336,45 @@ export default function InvoiceManager() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {showForm ? (
           !invoiceType ? (
-            <div className="max-w-4xl mx-auto">
-              <div className="flex justify-between items-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900">Choisir le type de facture</h2>
-                <button
-                  onClick={handleCancelForm}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <LogOut className="w-6 h-6 rotate-180" />
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button
-                  onClick={() => setInvoiceType('standard')}
-                  className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm hover:shadow-md border-2 border-transparent hover:border-primary-500 transition-all text-center group"
-                >
-                  <div className="w-16 h-16 bg-primary-50 text-primary-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary-100 transition-colors">
-                    <FileText className="w-8 h-8" />
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Facture Standard</h3>
-                  <p className="text-gray-500">
-                    Facture classique pour la vente de produits ou services. Idéal pour la plupart des transactions commerciales.
-                  </p>
-                </button>
+              <div className="bg-white rounded-xl shadow-sm p-4 sm:p-6 md:p-8">
+                <div className="flex items-center justify-between mb-6 sm:mb-8">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Choisir le type de facture</h2>
+                  <button
+                    onClick={handleCancelForm}
+                    className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                    title="Retour"
+                  >
+                    <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                  <button
+                    onClick={() => setInvoiceType('standard')}
+                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-primary-500 transition-all text-center group"
+                  >
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <FileText className="w-7 h-7 sm:w-8 sm:h-8" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Facture Standard</h3>
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                      Facture classique pour la vente de produits ou services.
+                    </p>
+                  </button>
 
-                <button
-                  onClick={() => setInvoiceType('dhl')}
-                  className="flex flex-col items-center p-8 bg-white rounded-xl shadow-sm hover:shadow-md border-2 border-transparent hover:border-primary-500 transition-all text-center group"
-                >
-                  <div className="w-16 h-16 bg-yellow-50 text-yellow-600 rounded-full flex items-center justify-center mb-4 group-hover:bg-yellow-100 transition-colors">
-                    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                      <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                    </svg>
-                  </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">Bordereau DHL</h3>
-                  <p className="text-gray-500">
-                    Bordereau spécifique pour les envois DHL incluant la gestion du poids pour chaque article.
-                  </p>
-                </button>
+                  <button
+                    onClick={() => setInvoiceType('dhl')}
+                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-yellow-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-yellow-500 transition-all text-center group"
+                  >
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <Package className="w-7 h-7 sm:w-8 sm:h-8" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Bordereau DHL</h3>
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                      Bordereau pour envois DHL avec gestion du poids.
+                    </p>
+                  </button>
+                </div>
               </div>
-            </div>
           ) : (
             invoiceType === 'standard' ? (
               <InvoiceFormStandard
@@ -463,8 +461,45 @@ export default function InvoiceManager() {
                     {totalItems} facture{totalItems !== 1 ? 's' : ''} au total
                   </p>
                 </div>
-                <InvoiceList
-                  invoices={invoices}
+                <div>
+              {/* Filter Tabs */}
+              <div className="mb-6 border-b border-gray-200">
+                <nav className="-mb-px flex space-x-4 sm:space-x-8" aria-label="Tabs">
+                  <button
+                    onClick={() => setFilterType('all')}
+                    className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                      filterType === 'all'
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    Toutes ({invoices.length})
+                  </button>
+                  <button
+                    onClick={() => setFilterType('standard')}
+                    className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                      filterType === 'standard'
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    Standard ({invoices.filter(inv => inv.invoiceType === 'standard').length})
+                  </button>
+                  <button
+                    onClick={() => setFilterType('dhl')}
+                    className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                      filterType === 'dhl'
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    DHL ({invoices.filter(inv => inv.invoiceType === 'dhl').length})
+                  </button>
+                </nav>
+              </div>
+
+              <InvoiceList
+                  invoices={filterType === 'all' ? invoices : invoices.filter(inv => inv.invoiceType === filterType)}
                   onEdit={handleEditInvoice}
                   onDelete={handleDeleteInvoice}
                   onView={handleViewInvoice}
@@ -472,6 +507,7 @@ export default function InvoiceManager() {
                   downloadingId={downloadingInvoiceId}
                   deletingId={deletingInvoiceId}
                 />
+                </div>
                 
                 {/* Pagination Controls */}
                 {totalItems > itemsPerPage && (
