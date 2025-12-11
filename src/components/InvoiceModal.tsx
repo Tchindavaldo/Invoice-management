@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { Invoice } from '../types';
 import InvoicePreview from './InvoicePreview';
-import { X, Download } from 'lucide-react';
+import { X, Download, Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
@@ -19,19 +19,32 @@ export default function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
 
     setDownloadingPDF(true);
     try {
-      // Forcer la largeur desktop pour le PDF (A4 = 210mm)
-      const originalWidth = invoiceRef.current.style.width;
-      invoiceRef.current.style.width = '210mm';
+      // Créer un clone de l'élément pour la capture
+      const element = invoiceRef.current;
+      const clone = element.cloneNode(true) as HTMLElement;
       
-      const canvas = await html2canvas(invoiceRef.current, {
+      // Configurer le clone pour la capture PDF
+      clone.style.position = 'fixed';
+      clone.style.left = '-9999px';
+      clone.style.top = '0';
+      clone.style.width = '210mm';
+      clone.style.zIndex = '-1';
+      
+      // Ajouter le clone au DOM
+      document.body.appendChild(clone);
+      
+      // Petit délai pour que le DOM se mette à jour
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      const canvas = await html2canvas(clone, {
         scale: 2,
         logging: false,
         useCORS: true,
         width: 794, // 210mm en pixels à 96 DPI
       });
       
-      // Restaurer la largeur originale
-      invoiceRef.current.style.width = originalWidth;
+      // Supprimer le clone
+      document.body.removeChild(clone);
 
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
@@ -82,8 +95,14 @@ export default function InvoiceModal({ invoice, onClose }: InvoiceModalProps) {
               style={{ minWidth: '140px' }}
               title="Télécharger PDF"
             >
-              <Download className="w-5 h-5" />
-              <span className="hidden sm:inline">{downloadingPDF ? 'Génération...' : 'PDF'}</span>
+              {downloadingPDF ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <Download className="w-5 h-5" />
+                  <span className="hidden sm:inline">PDF</span>
+                </>
+              )}
             </button>
             <button
               onClick={onClose}
