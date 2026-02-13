@@ -3,6 +3,7 @@ import { InvoiceFormData, InvoiceItem } from '../types';
 import { Plus, Trash2, Upload, X, Loader2 } from 'lucide-react';
 import logoImage from '../images/logo.jpg';
 import { uploadImage, isSupabaseStorageUrl, deleteImage } from '../services/imageService';
+import ValidationDialog from './ValidationDialog';
 
 interface InvoiceFormProps {
   initialData?: Partial<InvoiceFormData>;
@@ -46,6 +47,7 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | number | boolean) => {
     setFormData({ ...formData, [field]: value });
@@ -160,10 +162,51 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
     setFormData({ ...formData, items: updatedItems });
   };
 
+  const getFormattedErrors = () => {
+    const formattedErrors: { field: string; message: string }[] = [];
+    
+    Object.entries(errors).forEach(([key, message]) => {
+      let fieldName = key;
+      
+      // Formater les noms de champs pour qu'ils soient lisibles
+      if (key.startsWith('item_')) {
+        const match = key.match(/item_(\d+)_(\w+)/);
+        if (match) {
+          const itemIndex = parseInt(match[1]) + 1;
+          const fieldType = match[2];
+          const fieldTypeMap: { [key: string]: string } = {
+            description: 'Description',
+            quantity: 'Quantité',
+            price: 'Prix unitaire',
+          };
+          fieldName = `Article ${itemIndex} - ${fieldTypeMap[fieldType] || fieldType}`;
+        }
+      } else {
+        const fieldNameMap: { [key: string]: string } = {
+          invoiceNumber: 'Numéro de facture',
+          date: 'Date',
+          dueDate: 'Date d\'échéance',
+          companyName: 'Nom de l\'entreprise',
+          companyAddress: 'Adresse de l\'entreprise',
+          companyPhone: 'Téléphone de l\'entreprise',
+          companyEmail: 'Email de l\'entreprise',
+          clientName: 'Nom du client',
+          items: 'Articles',
+        };
+        fieldName = fieldNameMap[key] || key;
+      }
+      
+      formattedErrors.push({ field: fieldName, message });
+    });
+    
+    return formattedErrors;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) {
+      setShowValidationDialog(true);
       return;
     }
 
@@ -204,10 +247,9 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
               onChange={(e) => handleInputChange('invoiceNumber', e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                 errors.invoiceNumber 
-                  ? 'border-red-500 focus:ring-red-500' 
+                  ? 'border-2 border-red-600 focus:ring-red-600' 
                   : 'border-gray-300 focus:ring-primary-600'
               }`}
-              required
             />
             {errors.invoiceNumber && (
               <p className="text-red-500 text-sm mt-1">{errors.invoiceNumber}</p>
@@ -222,8 +264,11 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
                 type="date"
                 value={formData.date}
                 onChange={(e) => handleInputChange('date', e.target.value)}
-                className="w-full px-2 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 text-sm sm:text-base"
-                required
+                className={`w-full px-2 sm:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm sm:text-base ${
+                  errors.date 
+                    ? 'border-2 border-red-600 focus:ring-red-600' 
+                    : 'border-gray-300 focus:ring-primary-600'
+                }`}
               />
             </div>
             <div>
@@ -234,8 +279,11 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
                 type="date"
                 value={formData.dueDate}
                 onChange={(e) => handleInputChange('dueDate', e.target.value)}
-                className="w-full px-2 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600 text-sm sm:text-base"
-                required
+                className={`w-full px-2 sm:px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 text-sm sm:text-base ${
+                  errors.dueDate 
+                    ? 'border-2 border-red-600 focus:ring-red-600' 
+                    : 'border-gray-300 focus:ring-primary-600'
+                }`}
               />
             </div>
           </div>
@@ -293,10 +341,9 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
               onChange={(e) => handleInputChange('companyName', e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                 errors.companyName 
-                  ? 'border-red-500 focus:ring-red-500' 
+                  ? 'border-2 border-red-600 focus:ring-red-600' 
                   : 'border-gray-300 focus:ring-primary-600'
               }`}
-              required
             />
             {errors.companyName && (
               <p className="text-red-500 text-sm mt-1">{errors.companyName}</p>
@@ -323,10 +370,9 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
               onChange={(e) => handleInputChange('companyAddress', e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                 errors.companyAddress 
-                  ? 'border-red-500 focus:ring-red-500' 
+                  ? 'border-2 border-red-600 focus:ring-red-600' 
                   : 'border-gray-300 focus:ring-primary-600'
               }`}
-              required
             />
             {errors.companyAddress && (
               <p className="text-red-500 text-sm mt-1">{errors.companyAddress}</p>
@@ -353,10 +399,9 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
               onChange={(e) => handleInputChange('companyPhone', e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                 errors.companyPhone 
-                  ? 'border-red-500 focus:ring-red-500' 
+                  ? 'border-2 border-red-600 focus:ring-red-600' 
                   : 'border-gray-300 focus:ring-primary-600'
               }`}
-              required
             />
             {errors.companyPhone && (
               <p className="text-red-500 text-sm mt-1">{errors.companyPhone}</p>
@@ -372,10 +417,9 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
               onChange={(e) => handleInputChange('companyEmail', e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                 errors.companyEmail 
-                  ? 'border-red-500 focus:ring-red-500' 
+                  ? 'border-2 border-red-600 focus:ring-red-600' 
                   : 'border-gray-300 focus:ring-primary-600'
               }`}
-              required
             />
             {errors.companyEmail && (
               <p className="text-red-500 text-sm mt-1">{errors.companyEmail}</p>
@@ -409,10 +453,9 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
               onChange={(e) => handleInputChange('clientName', e.target.value)}
               className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                 errors.clientName 
-                  ? 'border-red-500 focus:ring-red-500' 
+                  ? 'border-2 border-red-600 focus:ring-red-600' 
                   : 'border-gray-300 focus:ring-primary-600'
               }`}
-              required
             />
             {errors.clientName && (
               <p className="text-red-500 text-sm mt-1">{errors.clientName}</p>
@@ -498,7 +541,7 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
                       placeholder="Nom de l'article ou service"
                       className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${
                         errors[`item_${formData.items.indexOf(item)}_description`] 
-                          ? 'border-red-500 focus:ring-red-500' 
+                          ? 'border-2 border-red-600 focus:ring-red-600' 
                           : 'border-gray-300 focus:ring-primary-600'
                       }`}
                     />
@@ -761,6 +804,13 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
           <span className="sm:hidden">{saving ? '...' : 'Enregistrer'}</span>
         </button>
       </div>
+
+      {/* Dialogue de validation */}
+      <ValidationDialog
+        isOpen={showValidationDialog}
+        onClose={() => setShowValidationDialog(false)}
+        errors={getFormattedErrors()}
+      />
     </form>
   );
 }
