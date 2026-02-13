@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { InvoiceFormData, InvoiceItem } from '../types';
-import { Plus, Trash2, Upload, X, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Upload, X, Loader2, Check, Pencil } from 'lucide-react';
 import logoImage from '../images/logo.jpg';
 import { uploadImage, isSupabaseStorageUrl, deleteImage } from '../services/imageService';
 import ValidationDialog from './ValidationDialog';
@@ -48,6 +48,8 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [isClientEmailLocked, setIsClientEmailLocked] = useState(false);
+  const [isClientEmailRemoved, setIsClientEmailRemoved] = useState(false);
 
   const handleInputChange = (field: keyof InvoiceFormData, value: string | number | boolean) => {
     setFormData({ ...formData, [field]: value });
@@ -485,14 +487,59 @@ export default function InvoiceFormStandard({ initialData, onSubmit, onCancel, i
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              Email {isClientEmailRemoved && <span className="text-xs font-normal text-gray-400 italic">(Supprimé de la facture)</span>}
             </label>
-            <input
-              type="email"
-              value={formData.clientEmail}
-              onChange={(e) => handleInputChange('clientEmail', e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-600"
-            />
+            {!isClientEmailRemoved ? (
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  value={formData.clientEmail}
+                  onChange={(e) => handleInputChange('clientEmail', e.target.value)}
+                  readOnly={isClientEmailLocked}
+                  className={`flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                    isClientEmailLocked 
+                      ? 'bg-gray-100 text-gray-500 border-gray-200 cursor-not-allowed font-medium' 
+                      : 'border-gray-300 focus:ring-primary-600'
+                  }`}
+                  placeholder="Ex: client@email.com"
+                />
+                <button
+                  type="button"
+                  onClick={() => setIsClientEmailLocked(!isClientEmailLocked)}
+                  className={`p-2 rounded-lg border transition-all flex items-center justify-center min-w-[42px] ${
+                    isClientEmailLocked
+                      ? 'bg-blue-50 border-blue-200 text-blue-600 hover:bg-blue-100'
+                      : 'bg-green-50 border-green-200 text-green-600 hover:bg-green-100'
+                  }`}
+                  title={isClientEmailLocked ? "Modifier l'email" : "Valider l'email"}
+                >
+                  {isClientEmailLocked ? <Pencil className="w-5 h-5" /> : <Check className="w-5 h-5" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleInputChange('clientEmail', '');
+                    setIsClientEmailRemoved(true);
+                  }}
+                  className="p-2 bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 rounded-lg transition-all flex items-center justify-center min-w-[42px]"
+                  title="Supprimer cet email"
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsClientEmailRemoved(false);
+                  setIsClientEmailLocked(false);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-dashed border-gray-300 text-gray-600 hover:bg-gray-100 hover:border-blue-400 hover:text-blue-600 rounded-lg transition-all w-full justify-center text-sm italic"
+              >
+                <Plus className="w-4 h-4" />
+                Ajouter une adresse email pour ce client
+              </button>
+            )}
           </div>
         </div>
       </div>
