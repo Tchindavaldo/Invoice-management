@@ -515,8 +515,17 @@ export default function InvoiceFormDHL({ initialData, onSubmit, onCancel, isEdit
         </div>
 
         {formData.items.length === 0 && (
-          <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-            <p className="text-gray-500">Aucun article ajouté.</p>
+          <div className={`text-center py-8 rounded-lg border-2 border-dashed transition-colors ${
+            errors.items 
+              ? 'bg-red-50 border-red-600' 
+              : 'bg-gray-50 border-gray-300'
+          }`}>
+            <p className={`${errors.items ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+              {errors.items || 'Aucun article ajouté.'}
+            </p>
+            {errors.items && (
+              <p className="text-red-500 text-xs mt-1 italic">Cliquez sur le bouton "Ajouter une ligne" ci-dessus</p>
+            )}
           </div>
         )}
 
