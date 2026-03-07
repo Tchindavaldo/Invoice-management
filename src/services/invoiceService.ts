@@ -39,6 +39,7 @@ export const createInvoice = async (invoice: Omit<Invoice, 'id'>): Promise<strin
       signature: invoice.signature,
       show_signature: invoice.showSignature,
       signature_text: invoice.signatureText,
+      notes: invoice.notes,
 
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -113,6 +114,7 @@ export const getAllInvoices = async (page: number = 1, pageSize: number = 10): P
       signature: item.signature,
       showSignature: item.show_signature,
       signatureText: item.signature_text,
+      notes: item.notes,
 
       createdAt: item.created_at,
       updatedAt: item.updated_at,
@@ -170,6 +172,7 @@ export const getInvoiceById = async (id: string): Promise<Invoice | null> => {
         signature: data.signature,
         showSignature: data.show_signature,
         signatureText: data.signature_text,
+        notes: data.notes,
 
         createdAt: data.created_at,
         updatedAt: data.updated_at,
@@ -222,6 +225,7 @@ export const updateInvoice = async (id: string, invoice: Partial<Invoice>): Prom
     if (invoice.signature !== undefined) dbUpdate.signature = invoice.signature;
     if (invoice.showSignature !== undefined) dbUpdate.show_signature = invoice.showSignature;
     if (invoice.signatureText !== undefined) dbUpdate.signature_text = invoice.signatureText;
+    if (invoice.notes !== undefined) dbUpdate.notes = invoice.notes;
 
     const { error } = await supabase
       .from(TABLE_NAME)

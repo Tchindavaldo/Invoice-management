@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { Invoice } from '../types';
-import { Edit, Trash2, Eye, FileText, Download, Loader2 } from 'lucide-react';
+import { Edit, Trash2, Eye, FileText, Download, Loader2, AlertTriangle } from 'lucide-react';
 
 interface InvoiceListProps {
   invoices: Invoice[];
@@ -12,6 +13,8 @@ interface InvoiceListProps {
 }
 
 export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDownload, downloadingId, deletingId }: InvoiceListProps) {
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
+
   const formatCurrency = (amount: number, currency: string = 'EUR') => {
     // Mapping des devises vers les symboles
     const currencySymbols: { [key: string]: string } = {
@@ -108,11 +111,7 @@ export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDown
                 <span className="text-xs">Modifier</span>
               </button>
               <button
-                onClick={() => {
-                  if (window.confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
-                    onDelete(invoice.id);
-                  }
-                }}
+                onClick={() => setInvoiceToDelete(invoice)}
                 disabled={deletingId === invoice.id}
                 className="flex flex-col items-center gap-1 p-2 text-red-600 hover:bg-red-50 disabled:text-red-400 rounded-lg transition-colors flex-1"
                 title="Supprimer"
@@ -203,11 +202,7 @@ export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDown
                     <Edit className="w-5 h-5" />
                   </button>
                   <button
-                    onClick={() => {
-                      if (window.confirm('Êtes-vous sûr de vouloir supprimer cette facture ?')) {
-                        onDelete(invoice.id);
-                      }
-                    }}
+                    onClick={() => setInvoiceToDelete(invoice)}
                     disabled={deletingId === invoice.id}
                     className="text-red-600 hover:text-red-900 disabled:text-red-400 p-2 hover:bg-red-50 rounded-lg transition-colors"
                     title="Supprimer"
@@ -225,6 +220,49 @@ export default function InvoiceList({ invoices, onEdit, onDelete, onView, onDown
         </tbody>
       </table>
     </div>
+
+    {/* Delete Confirmation Modal */}
+    {invoiceToDelete && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-[fadeIn_.2s_ease-out]">
+        <div 
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          onClick={() => setInvoiceToDelete(null)}
+        />
+        <div className="relative bg-white rounded-xl shadow-2xl max-w-sm w-full animate-[slideUp_.3s_ease-out] overflow-hidden">
+          <div className="px-6 py-5 flex items-start gap-4">
+            <div className="bg-red-100 p-2 rounded-full flex-shrink-0 mt-1">
+              <AlertTriangle className="w-6 h-6 text-red-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">
+                Supprimer la facture
+              </h3>
+              <p className="text-sm text-gray-500">
+                Êtes-vous sûr de vouloir supprimer la facture <span className="font-semibold text-gray-700">#{invoiceToDelete.invoiceNumber}</span> ? Cette action est irréversible.
+              </p>
+            </div>
+          </div>
+          <div className="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+            <button
+              onClick={() => setInvoiceToDelete(null)}
+              className="px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium rounded-lg transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={() => {
+                onDelete(invoiceToDelete.id);
+                setInvoiceToDelete(null);
+              }}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition-colors flex items-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Supprimer
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 }

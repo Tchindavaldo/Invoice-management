@@ -14,6 +14,7 @@ import {
 import InvoiceList from '../components/InvoiceList';
 import InvoiceFormStandard from '../components/InvoiceFormStandard';
 import InvoiceFormDHL from '../components/InvoiceFormDHL';
+import InvoiceFormVehicle from '../components/InvoiceFormVehicle';
 import InvoiceModal from '../components/InvoiceModal';
 import Toast from '../components/Toast';
 
@@ -29,8 +30,8 @@ export default function InvoiceManager() {
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
-  const [invoiceType, setInvoiceType] = useState<'standard' | 'dhl' | null>(null);
-  const [filterType, setFilterType] = useState<'all' | 'standard' | 'dhl'>('all');
+  const [invoiceType, setInvoiceType] = useState<'standard' | 'dhl' | 'vehicle' | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'standard' | 'dhl' | 'vehicle'>('all');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export default function InvoiceManager() {
         signature: formData.signature,
         showSignature: formData.showSignature,
         signatureText: formData.signatureText,
+        notes: formData.notes,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -165,6 +167,7 @@ export default function InvoiceManager() {
         signature: formData.signature,
         showSignature: formData.showSignature,
         signatureText: formData.signatureText,
+        notes: formData.notes,
       };
 
       await updateInvoiceDB(editingInvoice.id, updatedData);
@@ -373,6 +376,19 @@ export default function InvoiceManager() {
                       Bordereau pour envois DHL avec gestion du poids.
                     </p>
                   </button>
+
+                  <button
+                    onClick={() => setInvoiceType('vehicle')}
+                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-blue-500 transition-all text-center group"
+                  >
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <FileText className="w-7 h-7 sm:w-8 sm:h-8" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Bordereau Expédition</h3>
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                      Bordereau pour l'expédition de véhicules.
+                    </p>
+                  </button>
                 </div>
               </div>
           ) : (
@@ -407,7 +423,7 @@ export default function InvoiceManager() {
                 onCancel={handleCancelForm}
                 isEditing={!!editingInvoice}
               />
-            ) : (
+            ) : invoiceType === 'dhl' ? (
               <InvoiceFormDHL
                 initialData={editingInvoice ? {
                   invoiceType: 'dhl',
@@ -433,6 +449,38 @@ export default function InvoiceManager() {
                   signature: editingInvoice.signature || '',
                   showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
                   signatureText: editingInvoice.signatureText || '',
+                } : undefined}
+                onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
+                onCancel={handleCancelForm}
+                isEditing={!!editingInvoice}
+              />
+            ) : (
+              <InvoiceFormVehicle
+                initialData={editingInvoice ? {
+                  invoiceType: 'vehicle',
+                  invoiceNumber: editingInvoice.invoiceNumber,
+                  date: editingInvoice.date,
+                  dueDate: editingInvoice.dueDate,
+                  companyName: editingInvoice.companyName,
+                  companyNameChinese: editingInvoice.companyNameChinese || '',
+                  companyAddress: editingInvoice.companyAddress,
+                  companyAddress2: editingInvoice.companyAddress2 || '',
+                  companyPhone: editingInvoice.companyPhone,
+                  companyEmail: editingInvoice.companyEmail,
+                  companyLicense: editingInvoice.companyLicense || '',
+                  companyLogo: editingInvoice.companyLogo || '',
+                  clientName: editingInvoice.clientName,
+                  clientLocation: editingInvoice.clientLocation || '',
+                  clientPhone: editingInvoice.clientPhone || '',
+                  clientEmail: editingInvoice.clientEmail || '',
+                  items: editingInvoice.items,
+                  taxRate: editingInvoice.taxRate ?? 0,
+                  transportFees: editingInvoice.transportFees ?? 0,
+                  currency: editingInvoice.currency || 'EUR',
+                  signature: editingInvoice.signature || '',
+                  showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
+                  signatureText: editingInvoice.signatureText || '',
+                  notes: editingInvoice.notes || '',
                 } : undefined}
                 onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
                 onCancel={handleCancelForm}
@@ -494,6 +542,16 @@ export default function InvoiceManager() {
                     }`}
                   >
                     DHL ({invoices.filter(inv => inv.invoiceType === 'dhl').length})
+                  </button>
+                  <button
+                    onClick={() => setFilterType('vehicle')}
+                    className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                      filterType === 'vehicle'
+                        ? 'border-primary-500 text-primary-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    Bordereaux ({invoices.filter(inv => inv.invoiceType === 'vehicle').length})
                   </button>
                 </nav>
               </div>

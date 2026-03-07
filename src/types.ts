@@ -7,7 +7,7 @@ export interface InvoiceItem {
   weight?: string;
 }
 
-export type InvoiceType = 'standard' | 'dhl';
+export type InvoiceType = 'standard' | 'dhl' | 'vehicle';
 
 export interface Invoice {
   id: string;
@@ -47,6 +47,7 @@ export interface Invoice {
   signature?: string;
   showSignature?: boolean;
   signatureText?: string;
+  notes?: string;
 
   // Metadata
   createdAt?: string;
@@ -81,4 +82,5 @@ export interface InvoiceFormData {
   signature: string;
   showSignature: boolean;
   signatureText: string;
+  notes?: string;
 }
