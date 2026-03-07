@@ -9,21 +9,24 @@ interface InvoiceFormVehicleProps {
   isEditing?: boolean;
 }
 
-const InputField = ({ label, name, value, onChange, type = "text", placeholder, colSpan = 1 }: any) => (
-  <div className={`col-span-${colSpan} mb-4`}>
-    <label className="block text-sm font-medium text-gray-700 mb-1">
-      {label}
-    </label>
-    <input
-      type={type}
-      name={name}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-gray-50 text-gray-900"
-    />
-  </div>
-);
+const InputField = ({ label, name, value, onChange, type = "text", placeholder, colSpan = 1 }: any) => {
+  const colClass = colSpan === 2 ? 'md:col-span-2 col-span-1' : 'md:col-span-1 col-span-1';
+  return (
+    <div className={`${colClass} mb-4`}>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+      <input
+        type={type}
+        name={name}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors bg-gray-50 text-gray-900"
+      />
+    </div>
+  );
+};
 
 export default function InvoiceFormVehicle({
   initialData,

@@ -350,7 +350,7 @@ export default function InvoiceManager() {
                     <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                   <button
                     onClick={() => setInvoiceType('standard')}
                     className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-primary-500 transition-all text-center group"
@@ -511,8 +511,8 @@ export default function InvoiceManager() {
                 </div>
                 <div>
               {/* Filter Tabs */}
-              <div className="mb-6 border-b border-gray-200">
-                <nav className="-mb-px flex space-x-4 sm:space-x-8" aria-label="Tabs">
+              <div className="mb-6 border-b border-gray-200 overflow-x-auto custom-scrollbar">
+                <nav className="-mb-px flex space-x-4 sm:space-x-8 min-w-max pb-1 px-1" aria-label="Tabs">
                   <button
                     onClick={() => setFilterType('all')}
                     className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
