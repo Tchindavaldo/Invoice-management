@@ -37,6 +37,7 @@ export default function InvoiceFormDHL({ initialData, onSubmit, onCancel, isEdit
     
     taxRate: initialData?.taxRate ?? 0,
     transportFees: initialData?.transportFees ?? 0,
+    customsFees: initialData?.customsFees ?? 0,
     currency: initialData?.currency || 'EUR',
     signature: initialData?.signature || '',
     showSignature: initialData?.showSignature !== undefined ? initialData.showSignature : true,

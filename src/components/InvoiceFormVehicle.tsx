@@ -135,6 +135,7 @@ export default function InvoiceFormVehicle({
       
       taxRate: 0,
       transportFees: 0,
+      customsFees: 0,
       currency: 'EUR',
       
       signature: formData.signature,
