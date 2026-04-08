@@ -72,16 +72,16 @@ export default function InvoiceManager() {
     return `${prefix}${year}${month}${String(count).padStart(4, '0')}`;
   };
 
-  const calculateTotals = (items: InvoiceFormData['items'], taxRate: number, transportFees: number = 0) => {
+  const calculateTotals = (items: InvoiceFormData['items'], taxRate: number, transportFees: number = 0, customsFees: number = 0) => {
     const subtotal = items.reduce((sum, item) => sum + item.amount, 0);
     const tax = (subtotal * taxRate) / 100;
-    const total = subtotal + tax + transportFees;
+    const total = subtotal + tax + transportFees + customsFees;
     return { subtotal, tax, total };
   };
 
   const handleCreateInvoice = async (formData: InvoiceFormData) => {
     try {
-      const { subtotal, tax, total } = calculateTotals(formData.items, formData.taxRate, formData.transportFees);
+      const { subtotal, tax, total } = calculateTotals(formData.items, formData.taxRate, formData.transportFees, formData.customsFees);
       
       const newInvoice = {
         invoiceNumber: formData.invoiceNumber || generateInvoiceNumber(),
@@ -109,6 +109,7 @@ export default function InvoiceManager() {
         tax,
         taxRate: formData.taxRate,
         transportFees: formData.transportFees,
+        customsFees: formData.customsFees,
         total,
         currency: formData.currency,
         signature: formData.signature,
@@ -134,7 +135,7 @@ export default function InvoiceManager() {
     if (!editingInvoice) return;
 
     try {
-      const { subtotal, tax, total } = calculateTotals(formData.items, formData.taxRate, formData.transportFees);
+      const { subtotal, tax, total } = calculateTotals(formData.items, formData.taxRate, formData.transportFees, formData.customsFees);
 
       const updatedData = {
         invoiceNumber: formData.invoiceNumber,
@@ -162,6 +163,7 @@ export default function InvoiceManager() {
         tax,
         taxRate: formData.taxRate,
         transportFees: formData.transportFees,
+        customsFees: formData.customsFees,
         total,
         currency: formData.currency,
         signature: formData.signature,
@@ -414,6 +416,7 @@ export default function InvoiceManager() {
                   items: editingInvoice.items,
                   taxRate: editingInvoice.taxRate ?? 0,
                   transportFees: editingInvoice.transportFees ?? 0,
+                  customsFees: editingInvoice.customsFees ?? 0,
                   currency: editingInvoice.currency || 'EUR',
                   signature: editingInvoice.signature || '',
                   showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,

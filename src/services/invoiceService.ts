@@ -34,6 +34,7 @@ export const createInvoice = async (invoice: Omit<Invoice, 'id'>): Promise<strin
       tax: invoice.tax,
       tax_rate: invoice.taxRate,
       transport_fees: invoice.transportFees,
+      customs_fees: invoice.customsFees,
       total: invoice.total,
       currency: invoice.currency,
       signature: invoice.signature,
@@ -109,6 +110,7 @@ export const getAllInvoices = async (page: number = 1, pageSize: number = 10): P
       tax: item.tax,
       taxRate: item.tax_rate,
       transportFees: item.transport_fees || 0,
+      customsFees: item.customs_fees || 0,
       total: item.total,
       currency: item.currency,
       signature: item.signature,
@@ -167,6 +169,7 @@ export const getInvoiceById = async (id: string): Promise<Invoice | null> => {
         tax: data.tax,
         taxRate: data.tax_rate,
         transportFees: data.transport_fees || 0,
+        customsFees: data.customs_fees || 0,
         total: data.total,
         currency: data.currency,
         signature: data.signature,
@@ -219,6 +222,7 @@ export const updateInvoice = async (id: string, invoice: Partial<Invoice>): Prom
     if (invoice.tax !== undefined) dbUpdate.tax = invoice.tax;
     if (invoice.taxRate !== undefined) dbUpdate.tax_rate = invoice.taxRate;
     if (invoice.transportFees !== undefined) dbUpdate.transport_fees = invoice.transportFees;
+    if (invoice.customsFees !== undefined) dbUpdate.customs_fees = invoice.customsFees;
     if (invoice.total !== undefined) dbUpdate.total = invoice.total;
     if (invoice.currency !== undefined) dbUpdate.currency = invoice.currency;
 

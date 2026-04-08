@@ -40,6 +40,7 @@ export interface Invoice {
   tax: number;
   taxRate: number;
   transportFees: number;
+  customsFees: number;
   total: number;
   currency: string;
 
@@ -78,6 +79,7 @@ export interface InvoiceFormData {
 
   taxRate: number;
   transportFees: number;
+  customsFees: number;
   currency: string;
   signature: string;
   showSignature: boolean;

@@ -194,6 +194,14 @@ export default function InvoicePreviewStandard({
                 </span>
               </div>
             )}
+            {invoice.customsFees > 0 && (
+              <div className="flex justify-between py-2 border-b border-gray-200">
+                <span className="text-gray-700">Prix de douane:</span>
+                <span className="font-semibold">
+                  {formatCurrency(invoice.customsFees, invoice.currency)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between py-3 bg-green-700 text-white px-4 mt-2">
               <span className="text-lg font-bold">TOTAL</span>
               <span className="text-lg font-bold">
