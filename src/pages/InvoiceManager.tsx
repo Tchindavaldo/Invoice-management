@@ -353,55 +353,55 @@ export default function InvoiceManager() {
                     <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   <button
                     onClick={() => setInvoiceType('standard')}
-                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-primary-500 transition-all text-center group"
+                    className="flex flex-col items-center p-4 sm:p-8 bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-primary-500 transition-all text-center group"
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                      <FileText className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center mb-2 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <FileText className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Facture Standard</h3>
-                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Facture Standard</h3>
+                    <p className="hidden sm:block text-sm sm:text-base text-gray-600 leading-relaxed">
                       Facture classique pour la vente de produits ou services.
                     </p>
                   </button>
 
                   <button
                     onClick={() => setInvoiceType('dhl')}
-                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-yellow-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-yellow-500 transition-all text-center group"
+                    className="flex flex-col items-center p-4 sm:p-8 bg-gradient-to-br from-yellow-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-yellow-500 transition-all text-center group"
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                      <Package className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mb-2 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <Package className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Bordereau DHL</h3>
-                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Bordereau DHL</h3>
+                    <p className="hidden sm:block text-sm sm:text-base text-gray-600 leading-relaxed">
                       Bordereau pour envois DHL avec gestion du poids.
                     </p>
                   </button>
 
                   <button
                     onClick={() => setInvoiceType('vehicle')}
-                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-blue-500 transition-all text-center group"
+                    className="flex flex-col items-center p-4 sm:p-8 bg-gradient-to-br from-blue-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-blue-500 transition-all text-center group"
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                      <FileText className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-2 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <FileText className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Bordereau Expédition</h3>
-                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Bordereau Expédition</h3>
+                    <p className="hidden sm:block text-sm sm:text-base text-gray-600 leading-relaxed">
                       Bordereau pour l'expédition de véhicules.
                     </p>
                   </button>
 
                   <button
                     onClick={() => setInvoiceType('trade_assurance')}
-                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-emerald-500 transition-all text-center group"
+                    className="flex flex-col items-center p-4 sm:p-8 bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-emerald-500 transition-all text-center group"
                   >
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
-                      <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-2 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <ShieldCheck className="w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Trade Assurance</h3>
-                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                    <h3 className="text-sm sm:text-lg lg:text-xl font-bold text-gray-900 mb-1 sm:mb-2">Trade Assurance</h3>
+                    <p className="hidden sm:block text-sm sm:text-base text-gray-600 leading-relaxed">
                       Confirmation d'assurance de transport de véhicule.
                     </p>
                   </button>
