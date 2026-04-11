@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, LogOut, Loader2, ArrowLeft, Package } from 'lucide-react';
+import { Plus, FileText, LogOut, Loader2, ArrowLeft, Package, ShieldCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { Invoice, InvoiceFormData } from '../types';
 import html2canvas from 'html2canvas';
@@ -15,6 +15,7 @@ import InvoiceList from '../components/InvoiceList';
 import InvoiceFormStandard from '../components/InvoiceFormStandard';
 import InvoiceFormDHL from '../components/InvoiceFormDHL';
 import InvoiceFormVehicle from '../components/InvoiceFormVehicle';
+import InvoiceFormTradeAssurance from '../components/InvoiceFormTradeAssurance';
 import InvoiceModal from '../components/InvoiceModal';
 import Toast from '../components/Toast';
 
@@ -30,8 +31,8 @@ export default function InvoiceManager() {
   const [viewingInvoice, setViewingInvoice] = useState<Invoice | null>(null);
   const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<string | null>(null);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
-  const [invoiceType, setInvoiceType] = useState<'standard' | 'dhl' | 'vehicle' | null>(null);
-  const [filterType, setFilterType] = useState<'all' | 'standard' | 'dhl' | 'vehicle'>('all');
+  const [invoiceType, setInvoiceType] = useState<'standard' | 'dhl' | 'vehicle' | 'trade_assurance' | null>(null);
+  const [filterType, setFilterType] = useState<'all' | 'standard' | 'dhl' | 'vehicle' | 'trade_assurance'>('all');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
   useEffect(() => {
@@ -352,7 +353,7 @@ export default function InvoiceManager() {
                     <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
                   </button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   <button
                     onClick={() => setInvoiceType('standard')}
                     className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-primary-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-primary-500 transition-all text-center group"
@@ -389,6 +390,19 @@ export default function InvoiceManager() {
                     <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Bordereau Expédition</h3>
                     <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                       Bordereau pour l'expédition de véhicules.
+                    </p>
+                  </button>
+
+                  <button
+                    onClick={() => setInvoiceType('trade_assurance')}
+                    className="flex flex-col items-center p-6 sm:p-8 bg-gradient-to-br from-emerald-50 to-white rounded-xl shadow-sm hover:shadow-lg border-2 border-transparent hover:border-emerald-500 transition-all text-center group"
+                  >
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform">
+                      <ShieldCheck className="w-7 h-7 sm:w-8 sm:h-8" />
+                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Trade Assurance</h3>
+                    <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                      Confirmation d'assurance de transport de véhicule.
                     </p>
                   </button>
                 </div>
@@ -457,7 +471,7 @@ export default function InvoiceManager() {
                 onCancel={handleCancelForm}
                 isEditing={!!editingInvoice}
               />
-            ) : (
+            ) : invoiceType === 'vehicle' ? (
               <InvoiceFormVehicle
                 initialData={editingInvoice ? {
                   invoiceType: 'vehicle',
@@ -480,6 +494,38 @@ export default function InvoiceManager() {
                   taxRate: editingInvoice.taxRate ?? 0,
                   transportFees: editingInvoice.transportFees ?? 0,
                   currency: editingInvoice.currency || 'EUR',
+                  signature: editingInvoice.signature || '',
+                  showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
+                  signatureText: editingInvoice.signatureText || '',
+                  notes: editingInvoice.notes || '',
+                } : undefined}
+                onSubmit={editingInvoice ? handleUpdateInvoice : handleCreateInvoice}
+                onCancel={handleCancelForm}
+                isEditing={!!editingInvoice}
+              />
+            ) : (
+              <InvoiceFormTradeAssurance
+                initialData={editingInvoice ? {
+                  invoiceType: 'trade_assurance',
+                  invoiceNumber: editingInvoice.invoiceNumber,
+                  date: editingInvoice.date,
+                  dueDate: editingInvoice.dueDate,
+                  companyName: editingInvoice.companyName,
+                  companyNameChinese: editingInvoice.companyNameChinese || '',
+                  companyAddress: editingInvoice.companyAddress,
+                  companyAddress2: editingInvoice.companyAddress2 || '',
+                  companyPhone: editingInvoice.companyPhone,
+                  companyEmail: editingInvoice.companyEmail,
+                  companyLicense: editingInvoice.companyLicense || '',
+                  companyLogo: editingInvoice.companyLogo || '',
+                  clientName: editingInvoice.clientName,
+                  clientLocation: editingInvoice.clientLocation || '',
+                  clientPhone: editingInvoice.clientPhone || '',
+                  clientEmail: editingInvoice.clientEmail || '',
+                  items: editingInvoice.items,
+                  taxRate: editingInvoice.taxRate ?? 0,
+                  transportFees: editingInvoice.transportFees ?? 0,
+                  currency: editingInvoice.currency || 'USD',
                   signature: editingInvoice.signature || '',
                   showSignature: editingInvoice.showSignature !== undefined ? editingInvoice.showSignature : true,
                   signatureText: editingInvoice.signatureText || '',
@@ -555,6 +601,16 @@ export default function InvoiceManager() {
                     }`}
                   >
                     Bordereaux ({invoices.filter(inv => inv.invoiceType === 'vehicle').length})
+                  </button>
+                  <button
+                    onClick={() => setFilterType('trade_assurance')}
+                    className={`whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium transition-colors ${
+                      filterType === 'trade_assurance'
+                        ? 'border-emerald-500 text-emerald-600'
+                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                    }`}
+                  >
+                    Trade Assurance ({invoices.filter(inv => inv.invoiceType === 'trade_assurance').length})
                   </button>
                 </nav>
               </div>

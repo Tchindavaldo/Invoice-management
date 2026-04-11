@@ -7,7 +7,7 @@ export interface InvoiceItem {
   weight?: string;
 }
 
-export type InvoiceType = 'standard' | 'dhl' | 'vehicle';
+export type InvoiceType = 'standard' | 'dhl' | 'vehicle' | 'trade_assurance';
 
 export interface Invoice {
   id: string;
