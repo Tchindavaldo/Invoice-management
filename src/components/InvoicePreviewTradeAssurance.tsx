@@ -27,6 +27,9 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
   const companyName = form.companyName || invoice.companyName || 'Logistique Cargo Express';
   const companyAddress = form.companyAddress || invoice.companyAddress || '';
   const companyAddress2 = form.companyAddress2 || invoice.companyAddress2 || '';
+  const companyPhone = form.companyPhone || invoice.companyPhone || '';
+  const companyEmail = form.companyEmail || invoice.companyEmail || '';
+
 
   const formatDate = (d: string) => {
     try {
@@ -99,9 +102,21 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
             <div style={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold', fontSize: '13px', color: '#064e3b' }}>
               {companyName}
             </div>
-            <div style={{ fontSize: '11px', color: '#555' }}>
-              {[companyAddress, companyAddress2].filter(Boolean).join(' — ')}
-            </div>
+            {(companyAddress || companyAddress2) && (
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#555' }}>
+                {[companyAddress, companyAddress2].filter(Boolean).join(' — ')}
+              </div>
+            )}
+            {companyPhone && (
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#555' }}>
+                Tél : {companyPhone}
+              </div>
+            )}
+            {companyEmail && (
+              <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '11px', color: '#555' }}>
+                {companyEmail}
+              </div>
+            )}
           </div>
         </div>
         
@@ -126,85 +141,35 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
         </div>
       </div>
 
-      {/* ===== CLIENT + TRACKING ===== */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '20px',
-          marginBottom: '24px',
-        }}
-      >
-        {/* Client block */}
-        <div
-          style={{
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            padding: '14px 18px',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-              fontSize: '10px',
-              color: '#666',
-              letterSpacing: '1px',
-              textTransform: 'uppercase',
-              borderBottom: '1px solid #eee',
-              paddingBottom: '6px',
-              marginBottom: '8px',
-            }}
-          >
-            Client
-          </div>
-          <div
-            style={{
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#000',
-            }}
-          >
-            {clientName}
-          </div>
-        </div>
+      {/* ===== CLIENT + TRACKING — table pour compatibilité html2canvas ===== */}
+      <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: '20px 0', marginBottom: '4px', marginLeft: '-20px' }}>
+        <tbody>
+          <tr>
+            <td style={{ verticalAlign: 'top', padding: 0 }}>
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: '6px', padding: '14px 18px' }}>
+                <div style={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold', fontSize: '10px', color: '#666', letterSpacing: '1px', textTransform: 'uppercase', borderBottom: '1px solid #eee', paddingBottom: '6px', marginBottom: '8px' }}>
+                  Client
+                </div>
+                <div style={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold', fontSize: '14px', color: '#000' }}>
+                  {clientName}
+                </div>
+              </div>
+            </td>
+            <td style={{ verticalAlign: 'top', padding: 0 }}>
+              <div style={{ border: '1px solid #e5e7eb', borderRadius: '6px', padding: '14px 18px' }}>
+                <div style={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold', fontSize: '10px', color: '#666', letterSpacing: '1px', textTransform: 'uppercase', borderBottom: '1px solid #eee', paddingBottom: '6px', marginBottom: '8px' }}>
+                  Numéro de Suivi
+                </div>
+                <div style={{ fontFamily: 'Arial, sans-serif', fontWeight: 'bold', fontSize: '14px', color: '#000' }}>
+                  {trackingNumber}
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style={{ marginBottom: '24px' }} />
 
-        {/* Tracking block */}
-        <div
-          style={{
-            border: '1px solid #e5e7eb',
-            borderRadius: '6px',
-            padding: '14px 18px',
-          }}
-        >
-          <div
-            style={{
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-              fontSize: '10px',
-              color: '#666',
-              letterSpacing: '1px',
-              textTransform: 'uppercase',
-              borderBottom: '1px solid #eee',
-              paddingBottom: '6px',
-              marginBottom: '8px',
-            }}
-          >
-            Numéro de Suivi
-          </div>
-          <div
-            style={{
-              fontFamily: 'Arial, sans-serif',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#000',
-            }}
-          >
-            {trackingNumber}
-          </div>
-        </div>
-      </div>
 
       {/* ===== SERVICE INFO TABLE ===== */}
       <div style={{ marginBottom: '24px' }}>
@@ -220,6 +185,7 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   padding: '10px 14px',
                   textAlign: 'left',
                   letterSpacing: '0.5px',
+                  verticalAlign: 'top',
                 }}
               >
                 Produit
@@ -232,6 +198,7 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   color: '#ffffff',
                   padding: '10px 14px',
                   textAlign: 'left',
+                  verticalAlign: 'top',
                 }}
               >
                 Type de Service
@@ -244,6 +211,7 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   color: '#ffffff',
                   padding: '10px 14px',
                   textAlign: 'left',
+                  verticalAlign: 'top',
                 }}
               >
                 Statut
@@ -256,6 +224,7 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   color: '#ffffff',
                   padding: '10px 14px',
                   textAlign: 'right',
+                  verticalAlign: 'top',
                 }}
               >
                 Montant de l'Assurance
@@ -271,6 +240,7 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   color: '#000',
                   padding: '12px 14px',
                   borderBottom: '1px solid #a7f3d0',
+                  verticalAlign: 'top',
                 }}
               >
                 Véhicule
@@ -282,31 +252,22 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   color: '#000',
                   padding: '12px 14px',
                   borderBottom: '1px solid #a7f3d0',
+                  verticalAlign: 'top',
                 }}
               >
                 Assurance de transport
               </td>
               <td
                 style={{
+                  fontFamily: "'Times New Roman', serif",
+                  fontSize: '13px',
+                  color: '#000',
                   padding: '12px 14px',
                   borderBottom: '1px solid #a7f3d0',
+                  verticalAlign: 'top',
                 }}
               >
-                <span
-                  style={{
-                    display: 'inline-block',
-                    background: '#065f46',
-                    color: '#ffffff',
-                    fontFamily: 'Arial, sans-serif',
-                    fontWeight: 'bold',
-                    fontSize: '10px',
-                    padding: '3px 10px',
-                    borderRadius: '20px',
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  ✓ Payé et confirmé
-                </span>
+                ✓ Payé et confirmé
               </td>
               <td
                 style={{
@@ -317,6 +278,7 @@ export default function InvoicePreviewTradeAssurance({ invoice }: InvoicePreview
                   padding: '12px 14px',
                   textAlign: 'right',
                   borderBottom: '1px solid #a7f3d0',
+                  verticalAlign: 'top',
                 }}
               >
                 {formattedAmount}
