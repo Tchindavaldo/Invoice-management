@@ -1,15 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import InvoiceManager from './pages/InvoiceManager';
-import Login from './pages/Login';
-import NotFound from './pages/NotFound';
+import Expired from './pages/Expired';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<InvoiceManager />} />
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<Expired />} />
       </Routes>
     </Router>
   );
