@@ -1,30 +1,48 @@
-import { Clock, Globe } from 'lucide-react';
+// ----------------------------------------------------------------------
+// Page de blocage : la version gratuite Vercel a expiré.
+// Meme design que le FRONTEND / BACKEND de WOOD PRO.
+// ----------------------------------------------------------------------
 
 export default function Expired() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 text-center">
-      <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-16 h-16 flex items-center justify-center rounded-full bg-amber-100 text-amber-600">
-            <Clock size={32} />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Accès au site expiré
-          </h1>
-          <p className="text-gray-600">
-            La version gratuite de l'hébergement Vercel pour cette URL a expiré.
-            Le site n'est plus accessible via cette adresse temporaire.
-          </p>
-          <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 text-left text-sm text-amber-800 flex gap-3">
-            <Globe size={20} className="shrink-0 mt-0.5" />
-            <p>
-              Pour continuer à utiliser le site, vous devez acheter un nom de
-              domaine personnalisé et le configurer pour cette application.
-            </p>
-          </div>
-          <p className="text-xs text-gray-400 mt-2">
-            Veuillez contacter l'administrateur pour rétablir l'accès.
-          </p>
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 24,
+        textAlign: 'center',
+        fontFamily:
+          '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+        background: '#0f1115',
+        color: '#e7e9ee',
+      }}
+    >
+      <div style={{ maxWidth: 560 }}>
+        <div style={{ fontSize: 64, marginBottom: 16 }}>⛔</div>
+        <h1 style={{ fontSize: 28, margin: '0 0 12px', fontWeight: 700 }}>
+          Site temporairement indisponible
+        </h1>
+        <p style={{ fontSize: 16, lineHeight: 1.6, color: '#aab0bd', margin: '0 0 8px' }}>
+          La version gratuite de l’hébergement Vercel a expiré.
+        </p>
+        <p style={{ fontSize: 16, lineHeight: 1.6, color: '#aab0bd', margin: 0 }}>
+          Pour continuer à accéder au site, il est nécessaire d’acheter un nom de
+          domaine et de configurer un hébergement actif.
+        </p>
+        <div
+          style={{
+            marginTop: 28,
+            padding: '12px 16px',
+            borderRadius: 8,
+            background: '#1a1d24',
+            border: '1px solid #2a2e38',
+            fontSize: 14,
+            color: '#8b90a0',
+          }}
+        >
+          Erreur&nbsp;: URL Vercel expirée — version gratuite terminée.
         </div>
       </div>
     </div>
